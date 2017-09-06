@@ -209,7 +209,9 @@ class PlayDeck { // extends NibbleDeck {
 
         this.gameButtons = [
             { label: "hit", x: 700, y: 70, w: 200, h: 60, click: () => this.clickHit() },
-            { label: "stay", x: 700, y: 150, w: 200, h: 60, click: () => this.clickStay() }]
+            { label: "stay", x: 700, y: 150, w: 200, h: 60, click: () => this.clickStay() },
+            { label: "restart", x: 700, y: 650, w: 200, h: 60, click: () => this.sceneStart() }
+        ]
 
 
         let startY = 0
