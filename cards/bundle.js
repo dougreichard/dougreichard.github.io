@@ -178,8 +178,9 @@ const SCENE_START = 1;
 const SCENE_PLAY = 2;
 const SCENE_DEALER = 3;
 
-const DEALER_DICE = 1;
-const DEALER_MUST = 2;
+const DEALER_DICE_D10 = 1;
+const DEALER_DICE_D248 = 2;
+const DEALER_MUST = 3;
 
 
 const HAND_PLAYER = 0;
@@ -216,7 +217,8 @@ class PlayDeck { // extends NibbleDeck {
 
         let startY = 0
         this.startButtons = [
-            { label: "Dice", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerDice() },
+            { label: "Dice-10", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerDice(DEALER_DICE_D10) },
+            { label: "Dice-248", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerDice(DEALER_DICE_D248) },
             { label: "Hit <10", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerMust(10) },
             { label: "Hit <12", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerMust(12) },
             { label: "Hit <14", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerMust(14) },
@@ -288,8 +290,8 @@ class PlayDeck { // extends NibbleDeck {
     clickStay() {
         this.endHand();
     }
-    clickDealerDice() {
-        this.dealerType = DEALER_DICE;
+    clickDealerDice(type) {
+        this.dealerType = type;
         this.scenePlay();
     }
     scenePlay() {
@@ -336,16 +338,15 @@ class PlayDeck { // extends NibbleDeck {
     endHand() {
         this.scene = SCENE_DEALER;
         
-        let handId = this.dealerType == DEALER_DICE ? HAND_PLAYER : HAND_DEALER;
+        let handId = this.dealerType == DEALER_MUST ?  HAND_DEALER : HAND_PLAYER;
         let rewardsCards = this.hands[HAND_PLAYER].cards.length;
         
         let player = this.getScore(HAND_PLAYER)
-        let dealer = this.dealerType === DEALER_DICE ? this.dealerDice()
-            : this.getScore(HAND_DEALER);
+        let dealer = this.dealerType === DEALER_MUST ?  this.getScore(HAND_DEALER) : this.dealerDice();
             
         let isNatural = this.isNatural()
 
-        if (!isNatural && (player <= 20 && this.dealerType !== DEALER_DICE)) {
+        if (!isNatural && (player <= 20 && this.dealerType === DEALER_MUST)) {
             while (dealer < this.dealerMust) {
 
                 this.addCard(HAND_DEALER)
@@ -440,7 +441,7 @@ class PlayDeck { // extends NibbleDeck {
 
     drawDealer() {
         let dealer = this.dealerDiceValue;
-        if (this.dealerType !== DEALER_DICE) {
+        if (this.dealerType === DEALER_MUST) {
             dealer = this.getScore(HAND_DEALER);
             this.drawHand(HAND_DEALER)
         } else if (this.scene != SCENE_DEALER) return;
@@ -556,12 +557,21 @@ class PlayDeck { // extends NibbleDeck {
 
 
     dealerDice() {
-        let dealer = 10 + (Math.floor(Math.random() * 10)) + 1;
-        if (dealer > 20) {
-            dealer = 20;
+        let dice = 0;
+        if(this.dealerType === DEALER_DICE_D248) {
+            dice =(Math.floor(Math.random() * 2)+1) 
+                + (Math.floor(Math.random() * 4)+1)
+                + (Math.floor(Math.random() * 8)+1);
+                dice = dice > 14? 14:dice; 
+                this.dealerDiceValue = 10 + dice;
+        } else {
+            dice = (Math.floor(Math.random() * 10)+1);
+            dice = dice > 10? 10:dice; 
+            this.dealerDiceValue = 10 + dice;
         }
-        this.dealerDiceValue = dealer;
-        return dealer;
+        
+       
+        return this.dealerDiceValue;
     }
 
     discardHands() {
