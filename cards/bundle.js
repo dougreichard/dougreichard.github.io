@@ -60,34 +60,81 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(1);
+const gameTheme = __webpack_require__(1)
+const BaseRender = __webpack_require__(2)
+
+class GameView extends BaseRender {
+    constructor() {
+        super(null)
+        this.createPrerenderCanvas();
+    }
+
+    createPrerenderCanvas() {
+        this.prerender = document.createElement('canvas');
+        this.prerender.width = 1280;
+        this.prerender.height = 1024;
+        this.ctx = this.prerender.getContext('2d');
+    }
+
+    handleClick(pos) {
+        for (let button of this.buttons) {
+            if ((pos.x > button.x && pos.x < button.x + button.w) &&
+                (pos.y > button.y && pos.y < button.y + button.h)) {
+                button.click();
+            }
+        }
+    }
+
+    drawCls() {
+        this.ctx.fillStyle = gameTheme.base
+        this.ctx.fillRect(0, 0, 1280, 1024)
+    }
+
+    drawButtons(){
+        for (let button of this.buttons) {
+            this.drawButton(button.label, button.x, button.y, button.w, button.h)
+        }
+    }
+
+    
+
+    drawButton(label, x, y, w, h) {
+
+        this.ctx.save();
+        this.ctx.font = '40px arial black';
+        this.ctx.lineWidth = gameTheme.numLine;
+        let text = this.ctx.measureText(label);
+        let height = text.emHeightAscent ? text.emHeightAscent : this.ctx.measureText('M').width;
+
+        this.ctx.fillStyle = gameTheme.boxLight;
+        this.ctx.strokeStyle = gameTheme.boxStroke;
+        this.roundRect(x, y, w, h, 20)
+        this.ctx.fill();
+        this.ctx.stroke();
+        this.ctx.textBaseline = "middle"
+        this.ctx.fillStyle = gameTheme.boxStroke;
+        this.ctx.fillText(label, x + w / 2 - (text.width / 2), y + h / 2)
+        this.ctx.restore();
+
+    }
+}
+
+module.exports = GameView
+
 
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-const PlayDeck = __webpack_require__(2).PlayDeck;
-const info = __webpack_require__(8)
-const play = new PlayDeck(3, 8);
-play.createCanvas();
-
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-const Render = __webpack_require__(3).NibbleSquareRender
-
-
-const gameTheme = {
+module.exports = {
     base: "white",
     numStroke: "black",
     numDark: "black",
@@ -109,550 +156,56 @@ const gameTheme = {
     castleLine: 5
 }
 
-const cardTheme = [{
-    base: "white",
-    numStroke: "#0069c0",
-    numDark: "#0069c0",
-    numTextStroke: "#0069c0",
-    numText: "rgba(110,198,255,0.1)",
-    numLight: "rgba(110,198,255,0.1)",
-    whaleStroke: "#0069c0",
-    whaleLight: "rgba(110,198,255,0.1)",
-    whaleDark: "#0069c0",
-    castleStroke: "#0069c0",
-    castleLight: "rgba(110,198,255,0.1)",
-    castleDark: "#0069c0",
-    opcode: "#0069c0",
-    boxStroke: "#0069c0",
-    boxLight: "rgba(110,198,255,0.1)",
-    whaleLine: 5,
-    boxLine: 7,
-    numLine: 3,
-    castleLine: 5
-},
-{
-    base: "white",
-    numStroke: "#ba000d",
-    numDark: "#ba000d",
-    numTextStroke: "#ba000d",
-    numText: "rgba(255,121,97,0.1)",
-    numLight: "rgba(255,121,97,0.1)",
-    whaleStroke: "#ba000d",
-    whaleLight: "rgba(255,121,97,0.1)",
-    whaleDark: "#ba000d",
-    castleStroke: "#ba000d",
-    castleLight: "rgba(255,121,97,0.1)",
-    castleDark: "#ba000d",
-    opcode: "#ba000d",
-    boxStroke: "#ba000d",
-    boxLight: "rgba(255,121,97,0.1)",
-    whaleLine: 5,
-    boxLine: 7,
-    numLine: 3,
-    castleLine: 5
-},
-{
-    base: "white",
-    numStroke: "#087f23",
-    numDark: "#087f23",
-    numTextStroke: "#087f23",
-    numText: "rgba(128,226,126,0.1)",
-    numLight: "rgba(128,226,126,0.1)",
-    whaleStroke: "#087f23",
-    whaleLight: "rgba(128,226,126,0.1)",
-    whaleDark: "#087f23",
-    castleStroke: "#087f23",
-    castleLight: "rgba(128,226,126,0.1)",
-    castleDark: "#087f23",
-    opcode: "#087f23",
-    boxStroke: "#087f23",
-    boxLight: "rgba(128,226,126,0.1)",
-    whaleLine: 5,
-    boxLine: 7,
-    numLine: 3,
-    castleLine: 5
-}
-];
-
-const SCENE_START = 1;
-const SCENE_PLAY = 2;
-const SCENE_DEALER = 3;
-
-const DEALER_DICE_D10 = 1;
-const DEALER_DICE_D248 = 2;
-const DEALER_MUST = 3;
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
 
 
-const HAND_PLAYER = 0;
-const HAND_DEALER = 1;
-
-const NATURALS_NONDE = 0;
-const NATURALS_ZERO = 1;
-const NATURALS_TWENTY = 21;
-
-
-
-class PlayDeck { // extends NibbleDeck {
-    constructor(colors, maxnum) {
-        this.nummask = 0b111;
-        this.typemask = 0b11000;
-        this.typeshift = 3;
-        this.colormask = 0b111111100000;
-        this.colorshift = 5;
-
-        if (maxnum > 8) {
-            this.nummask = 0b1111;
-            this.typemask = 0b110000;
-            this.typeshift = 4;
-            this.colormask = 0b1111111000000;
-            this.colorshift = 6;
-        }
-
-        this.gameButtons = [
-            { label: "hit", x: 700, y: 70, w: 200, h: 60, click: () => this.clickHit() },
-            { label: "stay", x: 700, y: 150, w: 200, h: 60, click: () => this.clickStay() },
-            { label: "restart", x: 700, y: 650, w: 200, h: 60, click: () => this.sceneStart() }
-        ]
-
-
-        let startY = 0
-        this.startButtons = [
-            { label: "Dice-10", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerDice(DEALER_DICE_D10) },
-            { label: "Dice-248", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerDice(DEALER_DICE_D248) },
-            { label: "Hit <10", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerMust(10) },
-            { label: "Hit <12", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerMust(12) },
-            { label: "Hit <14", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerMust(14) },
-            { label: "Hit <15", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerMust(15) },
-            { label: "Rules", x: 300, y: startY += 80, w: 300, h: 60, click: () => window.location.replace('info.html') },
-        ]
-        this.createCanvas();
-        this.startData = { colors: colors, types: 4, maxnum: maxnum }
-        this.sceneStart();
-    }
-
-    sceneStart() {
-        this.buildDeck();
-        this.shuffle();
-
-        this.handsize = 2;
-        this.hands = [{}]
-
-        this.scene = SCENE_START;
-        this.buttons = this.startButtons
-        this.money = 100;
-        this.bet = 10;
-        this.message = "Let's play!"
-        this.draw();
-    }
-
-    createCanvas() {
-        let canvas = document.createElement('canvas');
-        this.prerender = document.createElement('canvas');
-        this.prerender.width = 1280;
-        this.prerender.height = 1024;
-        this.ctx = this.prerender.getContext('2d');
-        this.screenctx = canvas.getContext('2d');
-
-
-        canvas.id = "CursorLayer";
-        canvas.width = 1280;
-        canvas.height = 1024;
-        canvas.style.zIndex = 8;
-        canvas.style.position = "absolute";
-        document.body.appendChild(canvas);
-
-        this.render = new Render(this.ctx);
-        canvas.addEventListener("click", (e) => this.onClick(e))
-        this.canvas = canvas
-    }
-
-    getMousePos(evt) {
-        var rect = this.canvas.getBoundingClientRect();
-        return {
-            x: evt.clientX - rect.left,
-            y: evt.clientY - rect.top
-        };
-    }
-    onClick(e) {
-        let pos = this.getMousePos(e);
-
-        for (let button of this.buttons) {
-            if ((pos.x > button.x && pos.x < button.x + button.w) &&
-                (pos.y > button.y && pos.y < button.y + button.h)) {
-                button.click();
-            }
-        }
-    }
-    clickHit() {
-        this.addCard(HAND_PLAYER);
-        this.updateGame();
-    }
-    clickStay() {
-        this.endHand();
-    }
-    clickDealerDice(type) {
-        this.dealerType = type;
-        this.scenePlay();
-    }
-    scenePlay() {
-        this.naturals=false;
-        this.scene = SCENE_PLAY;
-        this.buttons = this.gameButtons;    
-        this.dealHands();
-        this.updateGame();
-        this.draw();
-    }
-    clickDealerMust(num) {
-        this.dealerType = DEALER_MUST;
-        this.dealerMust = num
-        this.hands = [{}, {}];
-        this.scenePlay();
+class BaseRender {
+    constructor(ctx) {
+        this.ctx = ctx;
     }
    
-    updateGame() {
-        let player = this.getScore(HAND_PLAYER)
-
-        if (player > 20) {
-            this.endHand();
-        } if (this.isNatural()) {
-            this.endHand();
-        }else {
-            this.draw();
+    roundRect(x, y, width, height, radius) {
+        if (typeof radius === 'undefined') {
+          radius = 5;
         }
-    }
-
-    isNatural() {
-        // Check for naturals before making deal take cards
-        if (this.hands[HAND_PLAYER].cards.length ==2) {
-            let card1 = this.hands[HAND_PLAYER].cards[0].num;
-            let card2 = this.hands[HAND_PLAYER].cards[1].num;
-            if (card1 == card2 && (card1===0 || card1===7)){
-                this.naturals = card1+1;
-                return true;
-            }
-        } 
-        return false; 
-    }
-   
-
-    endHand() {
-        this.scene = SCENE_DEALER;
-        
-        let handId = this.dealerType == DEALER_MUST ?  HAND_DEALER : HAND_PLAYER;
-        let rewardsCards = this.hands[HAND_PLAYER].cards.length;
-        
-        let player = this.getScore(HAND_PLAYER)
-        let dealer = this.dealerType === DEALER_MUST ?  this.getScore(HAND_DEALER) : this.dealerDice();
-            
-        let isNatural = this.isNatural()
-
-        if (!isNatural && (player <= 20 && this.dealerType === DEALER_MUST)) {
-            while (dealer < this.dealerMust) {
-
-                this.addCard(HAND_DEALER)
-                dealer = this.getScore(HAND_DEALER);
-            }
-        }
-
-        // Calc cost after dealer hand is dealt
-        let costCards = this.hands[handId].cards.length;
-        let cost = this.bet * (costCards - 1);
-        cost = cost < this.bet ? this.bet : cost;
-        //cost = this.bet;
-      
-        let reward = this.bet * Math.pow(2, rewardsCards - 2);
-        let win = false;
-        if (isNatural) {
-            reward = this.bet*4;
-            this.money += reward;
-            win = true;
-        }
-        if (dealer > 20 && player <= 20) {
-            this.money += reward;
-            win = true;
-        } else if (player > 20) {
-            this.money -= cost;
-        }
-        else if (dealer > player) {
-            this.money -= cost;
-        } else if (dealer < player) {
-            this.money += reward;
-            win = true;
+        if (typeof radius === 'number') {
+          radius = {tl: radius, tr: radius, br: radius, bl: radius};
         } else {
-            this.money -= cost;
+          var defaultRadius = {tl: 0, tr: 0, br: 0, bl: 0};
+          for (var side in defaultRadius) {
+            radius[side] = radius[side] || defaultRadius[side];
+          }
         }
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + radius.tl, y);
+        this.ctx.lineTo(x + width - radius.tr, y);
+        this.ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+        this.ctx.lineTo(x + width, y + height - radius.br);
+        this.ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+        this.ctx.lineTo(x + radius.bl, y + height);
+        this.ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+        this.ctx.lineTo(x, y + radius.tl);
+        this.ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+        this.ctx.closePath();
+     }
 
-        this.message = `Last hand you had ${player} the dealer had ${dealer} you ${win ? 'won ' + reward : 'lost ' + cost}`
-
-        this.buttons = [];
-
-        setTimeout(() => {
-
-            if (this.money <= 0) {
-                this.sceneStart();
-            } else {
-               this.scenePlay();
-            }
-        }, 3000)
-        this.draw();
-    }
-
-
-    draw() {
-        this.ctx.fillStyle = gameTheme.base
-        this.ctx.fillRect(0, 0, 1280, 1024)
-
-        for (let button of this.buttons) {
-            this.drawButton(button.label, button.x, button.y, button.w, button.h)
-        }
-        this.drawMessage();
-
-        if (this.scene !== SCENE_START) {
-            this.drawDealer();
-            this.drawMoney();
-            this.drawHand(HAND_PLAYER)
-            if (this.naturals) {
-                this.drawNaturals();
-            }
-        }
-
-        this.screenctx.drawImage(this.prerender, 0, 0)
-    }
-
-    drawButton(label, x, y, w, h) {
-
-        this.ctx.save();
-        this.ctx.font = '48px arial black';
-        this.ctx.lineWidth = gameTheme.numLine;
-        let text = this.ctx.measureText(label);
-        let height = text.emHeightAscent ? text.emHeightAscent : this.ctx.measureText('M').width;
-
-        this.ctx.fillStyle = gameTheme.boxLight;
-        this.ctx.strokeStyle = gameTheme.boxStroke;
-        this.render.roundRect(x, y, w, h, 20)
-        this.ctx.fill();
-        this.ctx.stroke();
-        this.ctx.textBaseline = "middle"
-        this.ctx.fillStyle = gameTheme.boxStroke;
-        this.ctx.fillText(label, x + w / 2 - (text.width / 2), y + h / 2)
-        this.ctx.restore();
-
-    }
-
-    drawDealer() {
-        let dealer = this.dealerDiceValue;
-        if (this.dealerType === DEALER_MUST) {
-            dealer = this.getScore(HAND_DEALER);
-            this.drawHand(HAND_DEALER)
-        } else if (this.scene != SCENE_DEALER) return;
-
-        this.ctx.save();
-        let score = `Dealer ${dealer}`
-        this.ctx.font = '28px arial black';
-        this.ctx.fillStyle = gameTheme.numStroke;
-        this.ctx.fillText(score, 20, 130);
-        this.ctx.restore();
-    }
-
-    drawMoney() {
-        this.ctx.save();
-        let score = `Money: ${this.money}`
-        let bet = `Bet: ${this.bet}`
-        this.ctx.textBaseline = "top"
-        this.ctx.font = '28px arial black';
-        this.ctx.lineWidth = gameTheme.numLine;
-        this.ctx.fillStyle = gameTheme.numTextStroke;
-        this.ctx.strokeStyle = gameTheme.numTextStroke;
-        this.ctx.fillText(score, 500, 70);
-        this.ctx.fillText(bet, 500, 120);
-        this.ctx.restore();
-    }
-
-    drawMessage() {
-        this.ctx.save();
-
-        this.ctx.textBaseline = "top"
-        this.ctx.font = '18px arial black';
-        this.ctx.lineWidth = gameTheme.numLine;
-        this.ctx.fillStyle = gameTheme.numTextStroke;
-        this.ctx.strokeStyle = gameTheme.numTextStroke;
-        this.ctx.fillText(this.message, 20, 10);
-
-        this.ctx.restore();
-    }
-
-    drawNaturals() {
-        this.ctx.save();
-        let msg = "NATURAL WIN!!";
-        this.ctx.textBaseline = "top"
-        this.ctx.font = '96px arial black';
-        this.ctx.lineWidth = gameTheme.numLine;
-        this.ctx.fillStyle = gameTheme.numText;
-        this.ctx.strokeStyle = gameTheme.numTextStroke;
-        this.ctx.fillText(msg, 100, 300);
-        this.ctx.strokeText(msg, 100, 300);
-        this.ctx.restore();
-    }
-
-    drawHand(handId) {
-        let hand = this.hands[handId];
-
-
-        this.ctx.save();
-        let score = this.getScore(handId);
-        this.ctx.font = '48px arial black';
-        this.ctx.lineWidth = gameTheme.numLine;
-        this.ctx.fillStyle = gameTheme.numText;
-        this.ctx.strokeStyle = gameTheme.numTextStroke;
-        if (handId === HAND_PLAYER) {
-            this.ctx.fillText(score, 120, 100);
-            this.ctx.strokeText(score, 120, 100);
-            this.ctx.translate(80, 150);
-            this.ctx.scale(0.40, 0.40)
-        } else {
-            this.ctx.fillText(score, 520, 300);
-            this.ctx.strokeText(score, 520, 300);
-            this.ctx.translate(580, 350);
-            this.ctx.scale(0.30, 0.30)
-        }
-
-
-        let y = 0;
-        let offY = Render.szCanvas.h / 6;
-
-        for (let card of hand.cards) {
-            this.ctx.save();
-            this.ctx.translate(Render.szCanvas.w / 2, Render.szCanvas.h / 2);
-            this.ctx.rotate(45 * Math.PI / 180);
-            this.ctx.translate(-Render.szCanvas.w / 2, -Render.szCanvas.h / 2);
-            this.ctx.translate(offY * y, offY * y);
-
-
-            this.render.drawCard(cardTheme[card.color], card.num, card.type);
-            y++;
-
-            this.ctx.restore();
-            if (this.scene === SCENE_PLAY && handId === HAND_DEALER) break;
-        }
-        this.ctx.restore();
-    }
-
-    shuffle() {
-        let array = this.cards;
-        if (this.cards.length < 2) return;
-
-        let i = 0
-            , j = 0
-            , temp = null
-        for (i = this.cards.length - 1; i > 0; i -= 1) {
-            j = Math.floor(Math.random() * (i + 1))
-            temp = this.cards[i]
-            this.cards[i] = this.cards[j]
-            this.cards[j] = temp
-        }
-        //m Test naturals this.cards.push(0,32,5,5,7,63,5,5,0,8,5,5,7,15);
-
-        console.log('shuffling ', this.cards.length, 'cards')
-    }
-
-
-    dealerDice() {
-        let dice = 0;
-        if(this.dealerType === DEALER_DICE_D248) {
-            dice =(Math.floor(Math.random() * 2)+1) 
-                + (Math.floor(Math.random() * 4)+1)
-                + (Math.floor(Math.random() * 8)+1);
-                dice = dice > 14? 14:dice; 
-                this.dealerDiceValue = 10 + dice;
-        } else {
-            dice = (Math.floor(Math.random() * 10)+1);
-            dice = dice > 10? 10:dice; 
-            this.dealerDiceValue = 10 + dice;
-        }
-        
-       
-        return this.dealerDiceValue;
-    }
-
-    discardHands() {
-        for (let hand of this.hands) {
-            for (let card of hand.cards ? hand.cards : []) {
-                this.discards.push(card.card);
-            }
-            hand.cards = []
-        }
-    }
-
-    getScore(handId) {
-        let hand = this.hands[handId];
-        let multi = 1;
-        let handScore = 0;
-        let bitUp = 0;
-        let bitDown = 0;
-        for (let card of hand.cards) {
-            bitUp += (card.type & 1) * multi;
-            bitDown += ((card.type & 2) / 2) * multi;
-
-            multi *= 2;
-            handScore += card.num
-            if (this.scene === SCENE_PLAY && handId === HAND_DEALER) break;
-        }
-        handScore += bitUp + bitDown;
-        return handScore;
-    }
-
-    addCard(handId) {
-        let hand = this.hands[handId];
-        hand.cards.push(this.deal());
-    }
-
-    dealHands() {
-        this.discardHands();
-        for (let hand of this.hands) {
-            for (let c = 0; c < this.handsize; c++) {
-                if (!hand.cards) hand.cards = [];
-                hand.cards.push(this.deal());
-            }
-        }
-    }
-
-    deal() {
-        if (this.cards.length < 1) {
-            this.cards = this.discards;
-            this.discards = [];
-            this.shuffle();
-        }
-        let card = this.cards.pop();
-
-        let num = card & this.nummask;
-        let type = (card & this.typemask) >> this.typeshift;
-        let color = (card & this.colormask) >> this.colorshift;
-        return { color: color, type: type, num: num, card: card }
-    }
-
-    buildDeck() {
-        let end = this.startData.maxnum * this.startData.types * this.startData.colors;
-
-        this.cards = [];
-        this.discards = [];
-        for (let x = 0; x < end; x++) {
-            this.cards.push(x);
-        }
+    getStringFor(num) {
+        return String("0000" + num.toString(2)).slice(-4);
     }
 }
 
-exports.PlayDeck = PlayDeck
-
-
+module.exports = BaseRender;
 
 /***/ }),
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const castle = __webpack_require__(4)
-  , whale = __webpack_require__(5)
-  , BaseRender = __webpack_require__(6).BaseRender
-  , Logic = __webpack_require__(7).Logic
+const castle = __webpack_require__(9)
+  , whale = __webpack_require__(10)
+  , BaseRender = __webpack_require__(2)
+  , Logic = __webpack_require__(11)
 
 
 const icondata = [
@@ -1062,10 +615,614 @@ NibbleSquareRender.szCastleScaled = { w: NibbleSquareRender.szCastle.w * NibbleS
 NibbleSquareRender.offCastle = { x: NibbleSquareRender.szCanvas.w / 2 - NibbleSquareRender.szCastleScaled.w/2, y: NibbleSquareRender.offNumber.y + 55 };
 NibbleSquareRender.offOpcode = { x: (NibbleSquareRender.szCanvas.w / 2), y: 0 };
 
-exports.NibbleSquareRender = NibbleSquareRender
+module.exports = NibbleSquareRender
 
 /***/ }),
 /* 4 */
+/***/ (function(module, exports) {
+
+module.exports = [{
+    base: "white",
+    numStroke: "#0069c0",
+    numDark: "#0069c0",
+    numTextStroke: "#0069c0",
+    numText: "rgba(110,198,255,0.1)",
+    numLight: "rgba(110,198,255,0.1)",
+    whaleStroke: "#0069c0",
+    whaleLight: "rgba(110,198,255,0.1)",
+    whaleDark: "#0069c0",
+    castleStroke: "#0069c0",
+    castleLight: "rgba(110,198,255,0.1)",
+    castleDark: "#0069c0",
+    opcode: "#0069c0",
+    boxStroke: "#0069c0",
+    boxLight: "rgba(110,198,255,0.1)",
+    whaleLine: 5,
+    boxLine: 7,
+    numLine: 3,
+    castleLine: 5
+},
+{
+    base: "white",
+    numStroke: "#ba000d",
+    numDark: "#ba000d",
+    numTextStroke: "#ba000d",
+    numText: "rgba(255,121,97,0.1)",
+    numLight: "rgba(255,121,97,0.1)",
+    whaleStroke: "#ba000d",
+    whaleLight: "rgba(255,121,97,0.1)",
+    whaleDark: "#ba000d",
+    castleStroke: "#ba000d",
+    castleLight: "rgba(255,121,97,0.1)",
+    castleDark: "#ba000d",
+    opcode: "#ba000d",
+    boxStroke: "#ba000d",
+    boxLight: "rgba(255,121,97,0.1)",
+    whaleLine: 5,
+    boxLine: 7,
+    numLine: 3,
+    castleLine: 5
+},
+{
+    base: "white",
+    numStroke: "#087f23",
+    numDark: "#087f23",
+    numTextStroke: "#087f23",
+    numText: "rgba(128,226,126,0.1)",
+    numLight: "rgba(128,226,126,0.1)",
+    whaleStroke: "#087f23",
+    whaleLight: "rgba(128,226,126,0.1)",
+    whaleDark: "#087f23",
+    castleStroke: "#087f23",
+    castleLight: "rgba(128,226,126,0.1)",
+    castleDark: "#087f23",
+    opcode: "#087f23",
+    boxStroke: "#087f23",
+    boxLight: "rgba(128,226,126,0.1)",
+    whaleLine: 5,
+    boxLine: 7,
+    numLine: 3,
+    castleLine: 5
+}
+];
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(6);
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const MainView = __webpack_require__(7)
+const info = __webpack_require__(13)
+const info3 = __webpack_require__(14)
+const games = __webpack_require__(15)
+const play = new MainView();
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+const GameView = __webpack_require__(0)
+const PlayDeck = __webpack_require__(8);
+const GatePlay = __webpack_require__(12);
+
+const SCENE_START = 1;
+
+class MainMenu extends GameView { // extends NibbleDeck {
+    constructor() {
+        super();
+        let startY = 0
+        this.startButtons = [
+            { label: "nibble", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.playNibble() },
+            { label: "gates", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.playGates() },
+            { label: "Help", x: 300, y: startY += 80, w: 300, h: 60, click: () => window.location.replace('games.html') },
+        ]
+        this.view = undefined;
+
+        this.createCanvas();
+        this.sceneStart();
+    }
+
+    sceneStart() {
+        this.scene = SCENE_START;
+        this.buttons = this.startButtons
+        this.draw();
+    }
+
+    playNibble() {
+        this.view = new PlayDeck(this.screenctx, 3, 8);
+        this.view.draw();
+    }
+
+    playGates() {
+        this.view = new GatePlay(this.screenctx, 3, 8);
+        this.view.draw();
+    }
+
+    createCanvas() {
+        let canvas = document.createElement('canvas');
+        this.screenctx = canvas.getContext('2d');
+
+        canvas.id = "CursorLayer";
+        canvas.width = 1280;
+        canvas.height = 1024;
+        canvas.style.zIndex = 8;
+        canvas.style.position = "absolute";
+        document.body.appendChild(canvas);
+
+
+        canvas.addEventListener("click", (e) => this.onClick(e))
+        this.canvas = canvas
+    }
+
+    getMousePos(evt) {
+        var rect = this.canvas.getBoundingClientRect();
+        return {
+            x: evt.clientX - rect.left,
+            y: evt.clientY - rect.top
+        };
+    }
+    onClick(e) {
+        let pos = this.getMousePos(e);
+
+        if (this.view) this.view.handleClick(pos);
+        else (this.handleClick(pos))
+
+    }
+
+    draw() {
+        this.drawCls();
+
+        this.drawButtons();
+        this.renderToScreen();
+    }
+    renderToScreen() {
+        this.screenctx.drawImage(this.prerender, 0, 0)
+    }
+}
+
+module.exports = MainMenu
+
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const Render = __webpack_require__(3)
+const GameView = __webpack_require__(0)
+
+const gameTheme = __webpack_require__(1)
+const cardTheme = __webpack_require__(4)
+
+const SCENE_START = 1;
+const SCENE_PLAY = 2;
+const SCENE_DEALER = 3;
+
+const DEALER_DICE_D10 = 1;
+const DEALER_DICE_D248 = 2;
+const DEALER_MUST = 3;
+
+
+const HAND_PLAYER = 0;
+const HAND_DEALER = 1;
+
+const NATURALS_NONE = 0;
+const NATURALS_ZERO = 1;
+const NATURALS_TWENTY = 21;
+
+
+
+class PlayDeck extends GameView {
+    constructor(screenctx, colors, maxnum) {
+        super();
+        this.nummask = 0b111;
+        this.typemask = 0b11000;
+        this.typeshift = 3;
+        this.colormask = 0b111111100000;
+        this.colorshift = 5;
+
+        if (maxnum > 8) {
+            this.nummask = 0b1111;
+            this.typemask = 0b110000;
+            this.typeshift = 4;
+            this.colormask = 0b1111111000000;
+            this.colorshift = 6;
+        }
+
+        this.gameButtons = [
+            { label: "hit", x: 700, y: 70, w: 200, h: 60, click: () => this.clickHit() },
+            { label: "stay", x: 700, y: 150, w: 200, h: 60, click: () => this.clickStay() },
+            { label: "restart", x: 700, y: 650, w: 200, h: 60, click: () => this.sceneStart() }
+        ]
+
+
+        let startY = 0
+        this.startButtons = [
+            { label: "Dice-10", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerDice(DEALER_DICE_D10) },
+            { label: "Dice-248", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerDice(DEALER_DICE_D248) },
+            { label: "Hit <10", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerMust(10) },
+            { label: "Hit <12", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerMust(12) },
+            { label: "Hit <14", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerMust(14) },
+            { label: "Hit <15", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerMust(15) },
+            { label: "Rules", x: 300, y: startY += 80, w: 300, h: 60, click: () => window.location.replace('nibble-info.html') },
+        ]
+        
+
+        this.render = new Render(this.ctx);
+        this.screenctx = screenctx;
+
+        this.startData = { colors: colors, types: 4, maxnum: maxnum }
+        this.sceneStart();
+    }
+
+    sceneStart() {
+        this.buildDeck();
+        this.shuffle();
+
+        this.handsize = 2;
+        this.hands = [{}]
+
+        this.scene = SCENE_START;
+        this.buttons = this.startButtons
+        this.money = 100;
+        this.bet = 10;
+        this.message = "Let's play!"
+        this.draw();
+    }
+
+
+    clickHit() {
+        this.addCard(HAND_PLAYER);
+        this.updateGame();
+    }
+    clickStay() {
+        this.endHand();
+    }
+    clickDealerDice(type) {
+        this.dealerType = type;
+        this.scenePlay();
+    }
+    scenePlay() {
+        this.naturals = false;
+        this.scene = SCENE_PLAY;
+        this.buttons = this.gameButtons;
+        this.dealHands();
+        this.updateGame();
+        this.draw();
+    }
+    clickDealerMust(num) {
+        this.dealerType = DEALER_MUST;
+        this.dealerMust = num
+        this.hands = [{}, {}];
+        this.scenePlay();
+    }
+
+    updateGame() {
+        let player = this.getScore(HAND_PLAYER)
+
+        if (player > 20) {
+            this.endHand();
+        } if (this.isNatural()) {
+            this.endHand();
+        } else {
+            this.draw();
+        }
+    }
+
+    isNatural() {
+        // Check for naturals before making deal take cards
+        if (this.hands[HAND_PLAYER].cards.length == 2) {
+            let card1 = this.hands[HAND_PLAYER].cards[0].num;
+            let card2 = this.hands[HAND_PLAYER].cards[1].num;
+            if (card1 == card2 && (card1 === 0 || card1 === 7)) {
+                this.naturals = card1 + 1;
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    endHand() {
+        this.scene = SCENE_DEALER;
+
+        let handId = this.dealerType == DEALER_MUST ? HAND_DEALER : HAND_PLAYER;
+        let rewardsCards = this.hands[HAND_PLAYER].cards.length;
+
+        let player = this.getScore(HAND_PLAYER)
+        let dealer = this.dealerType === DEALER_MUST ? this.getScore(HAND_DEALER) : this.dealerDice();
+
+        let isNatural = this.isNatural()
+
+        if (!isNatural && (player <= 20 && this.dealerType === DEALER_MUST)) {
+            while (dealer < this.dealerMust) {
+
+                this.addCard(HAND_DEALER)
+                dealer = this.getScore(HAND_DEALER);
+            }
+        }
+
+        // Calc cost after dealer hand is dealt
+        let costCards = this.hands[handId].cards.length;
+        let cost = this.bet * (costCards - 1);
+        cost = cost < this.bet ? this.bet : cost;
+        //cost = this.bet;
+
+        let reward = this.bet * Math.pow(2, rewardsCards - 2);
+        let win = false;
+        if (isNatural) {
+            reward = this.bet * 4;
+            this.money += reward;
+            win = true;
+        }
+        if (dealer > 20 && player <= 20) {
+            this.money += reward;
+            win = true;
+        } else if (player > 20) {
+            this.money -= cost;
+        }
+        else if (dealer > player) {
+            this.money -= cost;
+        } else if (dealer < player) {
+            this.money += reward;
+            win = true;
+        } else {
+            this.money -= cost;
+        }
+
+        this.message = `Last hand you had ${player} the dealer had ${dealer} you ${win ? 'won ' + reward : 'lost ' + cost}`
+
+        this.buttons = [];
+
+        setTimeout(() => {
+
+            if (this.money <= 0) {
+                this.sceneStart();
+            } else {
+                this.scenePlay();
+            }
+        }, 3000)
+        this.draw();
+    }
+
+
+    draw() {
+        this.ctx.fillStyle = gameTheme.base
+        this.ctx.fillRect(0, 0, 1280, 1024)
+
+        for (let button of this.buttons) {
+            this.drawButton(button.label, button.x, button.y, button.w, button.h)
+        }
+        this.drawMessage();
+
+        if (this.scene !== SCENE_START) {
+            this.drawDealer();
+            this.drawMoney();
+            this.drawHand(HAND_PLAYER)
+            if (this.naturals) {
+                this.drawNaturals();
+            }
+        }
+
+        this.screenctx.drawImage(this.prerender, 0, 0)
+    }
+
+
+    drawDealer() {
+        let dealer = this.dealerDiceValue;
+        if (this.dealerType === DEALER_MUST) {
+            dealer = this.getScore(HAND_DEALER);
+            this.drawHand(HAND_DEALER)
+        } else if (this.scene != SCENE_DEALER) return;
+
+        this.ctx.save();
+        let score = `Dealer ${dealer}`
+        this.ctx.font = '28px arial black';
+        this.ctx.fillStyle = gameTheme.numStroke;
+        this.ctx.fillText(score, 20, 130);
+        this.ctx.restore();
+    }
+
+    drawMoney() {
+        this.ctx.save();
+        let score = `Money: ${this.money}`
+        let bet = `Bet: ${this.bet}`
+        this.ctx.textBaseline = "top"
+        this.ctx.font = '28px arial black';
+        this.ctx.lineWidth = gameTheme.numLine;
+        this.ctx.fillStyle = gameTheme.numTextStroke;
+        this.ctx.strokeStyle = gameTheme.numTextStroke;
+        this.ctx.fillText(score, 500, 70);
+        this.ctx.fillText(bet, 500, 120);
+        this.ctx.restore();
+    }
+
+    drawMessage() {
+        this.ctx.save();
+
+        this.ctx.textBaseline = "top"
+        this.ctx.font = '18px arial black';
+        this.ctx.lineWidth = gameTheme.numLine;
+        this.ctx.fillStyle = gameTheme.numTextStroke;
+        this.ctx.strokeStyle = gameTheme.numTextStroke;
+        this.ctx.fillText(this.message, 20, 10);
+
+        this.ctx.restore();
+    }
+
+    drawNaturals() {
+        this.ctx.save();
+        let msg = "NATURAL WIN!!";
+        this.ctx.textBaseline = "top"
+        this.ctx.font = '96px arial black';
+        this.ctx.lineWidth = gameTheme.numLine;
+        this.ctx.fillStyle = gameTheme.numText;
+        this.ctx.strokeStyle = gameTheme.numTextStroke;
+        this.ctx.fillText(msg, 100, 300);
+        this.ctx.strokeText(msg, 100, 300);
+        this.ctx.restore();
+    }
+
+    drawHand(handId) {
+        let hand = this.hands[handId];
+
+
+        this.ctx.save();
+        let score = this.getScore(handId);
+        this.ctx.font = '48px arial black';
+        this.ctx.lineWidth = gameTheme.numLine;
+        this.ctx.fillStyle = gameTheme.numText;
+        this.ctx.strokeStyle = gameTheme.numTextStroke;
+        if (handId === HAND_PLAYER) {
+            this.ctx.fillText(score, 120, 100);
+            this.ctx.strokeText(score, 120, 100);
+            this.ctx.translate(80, 150);
+            this.ctx.scale(0.40, 0.40)
+        } else {
+            this.ctx.fillText(score, 620, 300);
+            this.ctx.strokeText(score, 620, 300);
+            this.ctx.translate(580, 350);
+            this.ctx.scale(0.30, 0.30)
+        }
+
+
+        let y = 0;
+        let offY = Render.szCanvas.h / 4;
+
+        for (let card of hand.cards) {
+            this.ctx.save();
+            this.ctx.translate(0, offY * y);
+            this.ctx.translate(Render.szCanvas.w / 2, Render.szCanvas.h / 2);
+            this.ctx.rotate(45 * Math.PI / 180);
+            this.ctx.translate(-Render.szCanvas.w / 2, -Render.szCanvas.h / 2);
+
+            this.render.drawCard(cardTheme[card.color], card.num, card.type);
+            y++;
+
+            this.ctx.restore();
+            if (this.scene === SCENE_PLAY && handId === HAND_DEALER) break;
+        }
+        this.ctx.restore();
+    }
+
+    shuffle() {
+        let array = this.cards;
+        if (this.cards.length < 2) return;
+
+        let i = 0
+            , j = 0
+            , temp = null
+        for (i = this.cards.length - 1; i > 0; i -= 1) {
+            j = Math.floor(Math.random() * (i + 1))
+            temp = this.cards[i]
+            this.cards[i] = this.cards[j]
+            this.cards[j] = temp
+        }
+        //m Test naturals this.cards.push(0,32,5,5,7,63,5,5,0,8,5,5,7,15);
+
+        console.log('shuffling ', this.cards.length, 'cards')
+    }
+
+
+    dealerDice() {
+        let dice = 0;
+        if (this.dealerType === DEALER_DICE_D248) {
+            dice = (Math.floor(Math.random() * 2) + 1)
+                + (Math.floor(Math.random() * 4) + 1)
+                + (Math.floor(Math.random() * 8) + 1);
+            dice = dice > 14 ? 14 : dice;
+            this.dealerDiceValue = 10 + dice;
+        } else {
+            dice = (Math.floor(Math.random() * 10) + 1);
+            dice = dice > 10 ? 10 : dice;
+            this.dealerDiceValue = 10 + dice;
+        }
+
+
+        return this.dealerDiceValue;
+    }
+
+    discardHands() {
+        for (let hand of this.hands) {
+            for (let card of hand.cards ? hand.cards : []) {
+                this.discards.push(card.card);
+            }
+            hand.cards = []
+        }
+    }
+
+    getScore(handId) {
+        let hand = this.hands[handId];
+        let multi = 1;
+        let handScore = 0;
+        let bitUp = 0;
+        let bitDown = 0;
+        for (let card of hand.cards) {
+            bitUp += (card.type & 1) * multi;
+            bitDown += ((card.type & 2) / 2) * multi;
+
+            multi *= 2;
+            handScore += card.num
+            if (this.scene === SCENE_PLAY && handId === HAND_DEALER) break;
+        }
+        handScore += bitUp + bitDown;
+        return handScore;
+    }
+
+    addCard(handId) {
+        let hand = this.hands[handId];
+        hand.cards.push(this.deal());
+    }
+
+    dealHands() {
+        this.discardHands();
+        for (let hand of this.hands) {
+            for (let c = 0; c < this.handsize; c++) {
+                if (!hand.cards) hand.cards = [];
+                hand.cards.push(this.deal());
+            }
+        }
+    }
+
+    deal() {
+        if (this.cards.length < 1) {
+            this.cards = this.discards;
+            this.discards = [];
+            this.shuffle();
+        }
+        let card = this.cards.pop();
+
+        let num = card & this.nummask;
+        let type = (card & this.typemask) >> this.typeshift;
+        let color = (card & this.colormask) >> this.colorshift;
+        return { color: color, type: type, num: num, card: card }
+    }
+
+    buildDeck() {
+        let end = this.startData.maxnum * this.startData.types * this.startData.colors;
+
+        this.cards = [];
+        this.discards = [];
+        for (let x = 0; x < end; x++) {
+            this.cards.push(x);
+        }
+    }
+}
+
+module.exports = PlayDeck
+
+
+
+/***/ }),
+/* 9 */
 /***/ (function(module, exports) {
 
 exports.draw = (ctx) => {
@@ -1142,7 +1299,7 @@ exports.draw = (ctx) => {
 }
 
 /***/ }),
-/* 5 */
+/* 10 */
 /***/ (function(module, exports) {
 
 
@@ -1200,60 +1357,7 @@ exports.draw = function (ctx) 	{
 }
 
 /***/ }),
-/* 6 */
-/***/ (function(module, exports) {
-
-
-
-class BaseRender {
-    constructor(ctx) {
-        this.ctx = ctx;
-    }
-    oldroundRect( x, y, w, h, r) {
-        if (w < 2 * r) r = w / 2;
-        if (h < 2 * r) r = h / 2;
-        this.ctx.beginPath();
-        this.ctx.moveTo(x+r, y);
-        this.ctx.arcTo(x+w, y,   x+w, y+h, r);
-        this.ctx.arcTo(x+w, y+h, x,   y+h, r);
-        this.ctx.arcTo(x,   y+h, x,   y,   r);
-        this.ctx.arcTo(x,   y,   x+w, y,   r);
-        this.ctx.closePath();
-    }
-    roundRect(x, y, width, height, radius) {
-        if (typeof radius === 'undefined') {
-          radius = 5;
-        }
-        if (typeof radius === 'number') {
-          radius = {tl: radius, tr: radius, br: radius, bl: radius};
-        } else {
-          var defaultRadius = {tl: 0, tr: 0, br: 0, bl: 0};
-          for (var side in defaultRadius) {
-            radius[side] = radius[side] || defaultRadius[side];
-          }
-        }
-        this.ctx.beginPath();
-        this.ctx.moveTo(x + radius.tl, y);
-        this.ctx.lineTo(x + width - radius.tr, y);
-        this.ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
-        this.ctx.lineTo(x + width, y + height - radius.br);
-        this.ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
-        this.ctx.lineTo(x + radius.bl, y + height);
-        this.ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
-        this.ctx.lineTo(x, y + radius.tl);
-        this.ctx.quadraticCurveTo(x, y, x + radius.tl, y);
-        this.ctx.closePath();
-     }
-
-    getStringFor(num) {
-        return String("0000" + num.toString(2)).slice(-4);
-    }
-}
-
-exports.BaseRender = BaseRender;
-
-/***/ }),
-/* 7 */
+/* 11 */
 /***/ (function(module, exports) {
 
 class Logic {
@@ -1516,13 +1620,449 @@ Logic.drawOR = (ctx, color) => {
 	ctx.restore();
 }
 
-exports.Logic = Logic;
+module.exports = Logic;
 
 /***/ }),
-/* 8 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__.p + "info.html";
+const GameView = __webpack_require__(0)
+const Render = __webpack_require__(3)
+
+const gameTheme = __webpack_require__(1)
+const cardTheme = __webpack_require__(4)
+
+const SCENE_START = 1;
+const SCENE_PLAY = 2;
+const SCENE_DEALER = 3;
+
+const HAND_PLAYER = 0;
+const HAND_DEALER = 1;
+
+const LOGIC_OR = 0;
+const LOGIC_AND = 1;
+const LOGIC_NOR = 2;
+const LOGIC_NAND = 3;
+
+
+
+module.exports = class extends GameView {
+    constructor(screenctx, colors, maxnum) {
+        super()
+        this.screenctx = screenctx
+
+        this.nummask = 0b111;
+        this.typemask = 0b11000;
+        this.typeshift = 3;
+        this.colormask = 0b111111100000;
+        this.colorshift = 5;
+
+        if (maxnum > 8) {
+            this.nummask = 0b1111;
+            this.typemask = 0b110000;
+            this.typeshift = 4;
+            this.colormask = 0b1111111000000;
+            this.colorshift = 6;
+        }
+
+        this.gameButtons = [
+            { label: "Banker", x: 520, y: 120, w: 200, h: 60, click: () => this.clickBanker() },
+            { label: "Player", x: 120, y: 120, w: 200, h: 60, click: () => this.clickPlayer() },
+            { label: "restart", x: 325, y: 800, w: 200, h: 60, click: () => this.sceneStart() }
+        ]
+        this.bankerButtons = [
+            { label: "Banker", x: 520, y: 120, w: 200, h: 60, click: () => this.clickBanker() },
+            { label: "Deal", x: 320, y: 100, w: 200, h: 60, click: () => this.clickDeal() },
+            { label: "restart", x: 325, y: 800, w: 200, h: 60, click: () => this.sceneStart() }
+        ]
+        this.playerButtons = [
+            { label: "Deal", x: 320, y: 100, w: 200, h: 60, click: () => this.clickDeal() },
+            { label: "Player", x: 120, y: 120, w: 200, h: 60, click: () => this.clickPlayer() },
+            { label: "restart", x: 325, y: 800, w: 200, h: 60, click: () => this.sceneStart() }
+        ]
+        this.redealButtons = [
+            { label: "Redeal", x: 320, y: 100, w: 200, h: 60, click: () => this.clickRedeal() },
+            { label: "restart", x: 325, y: 800, w: 200, h: 60, click: () => this.sceneStart() }
+        ]
+
+
+        let startY = 0
+        this.startButtons = [
+            { label: "gates hit", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickGates(true) },
+            { label: "gates nohit", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickGates(false) },
+            { label: "Rules", x: 300, y: startY += 80, w: 300, h: 60, click: () => window.location.replace('gates-info.html') },
+        ]
+        this.render = new Render(this.ctx);
+        this.startData = { colors: colors, types: 4, maxnum: maxnum }
+        this.sceneStart();
+    }
+
+    sceneStart() {
+        this.buildDeck();
+        this.shuffle();
+
+        this.handsize = 2;
+        this.hands = [{}, {}]
+
+        this.scene = SCENE_START;
+        this.buttons = this.startButtons
+        this.money = 100;
+        this.bet = 10;
+        this.pot = 0;
+        this.message = "Let's play!"
+        this.draw();
+    }
+
+    clickBanker() {
+        this.buttons = this.bankerButtons
+        this.betOn = HAND_DEALER
+        this.addToPot();
+        this.draw();
+    }
+    addToPot() {
+        this.pot += this.bet;
+        if (this.pot > this.bet * 3) {
+            this.pot = this.bet * 3;
+        }
+        if (this.pot > this.money) {
+            this.pot = this.money;
+        }
+    }
+    clickDeal() {
+        this.endHand();
+    }
+    clickRedeal() {
+        this.pot = 0;
+        this.natural = false;
+
+        if (this.money <= 0) {
+            this.sceneStart();
+        } else {
+            this.scenePlay();
+        }
+    }
+    clickPlayer() {
+        this.betOn = HAND_PLAYER
+        this.addToPot();
+        this.buttons = this.playerButtons
+        this.draw();
+    }
+    clickGates(hitRule) {
+        this.hitRule = hitRule
+        this.scenePlay();
+    }
+    scenePlay() {
+        this.naturals = false;
+        this.scene = SCENE_PLAY;
+        this.buttons = this.gameButtons;
+        this.dealHands();
+        this.draw();
+    }
+
+    handSize(hand) {
+        return this.hands[hand].cards.length;
+
+    }
+
+
+    endHand() {
+        this.scene = SCENE_DEALER;
+        this.addCard(HAND_PLAYER)
+        this.addCard(HAND_DEALER)
+
+        let player = this.getScore(HAND_PLAYER);
+        let dealer = this.getScore(HAND_DEALER);
+        if (this.hitRule) {
+            let playerDraw = (player < 4) && (dealer < 6);
+            let dealerDraw = dealer < 4;
+
+            if (playerDraw) {
+                this.addCard(HAND_PLAYER)
+                let playerCard = this.addCard(HAND_PLAYER)
+                let dealerDraws
+                if (playerCard.num == 6 && dealer < 2) {
+                    dealerDraw = true;
+                } else if (playerCard.num == 4 || playerCard.num == 5 && dealer < 5) {
+                    dealerDraw = true;
+                } else if (playerCard.num == 2 || playerCard.num == 3 && dealer < 4) {
+                    dealerDraw = true;
+                } else if (playerCard.num == 7 || playerCard.num == 0 && dealer < 3) {
+                    dealerDraw = true;
+                }
+            }
+            if (dealerDraw) {
+                this.addCard(HAND_DEALER)
+                this.addCard(HAND_DEALER)
+            }
+
+            player = this.getScore(HAND_PLAYER);
+            dealer = this.getScore(HAND_DEALER);
+            this.natural = false;
+            if ((this.handSize(HAND_DEALER) === 3) && (this.handSize(HAND_PLAYER) === 3)) {
+                this.natural = true;   
+            }
+        }
+
+        
+
+        let cost = this.pot;
+        let reward = this.pot;
+        let playerWin = player > dealer;
+        let win = false;
+
+        if (!playerWin && this.betOn == HAND_DEALER) {
+            this.money += reward
+            win = true;
+        } else if (playerWin && this.betOn == HAND_PLAYER) {
+            this.money += reward
+            win = true;
+        }else  {
+            this.money -= cost;
+        }
+        let betOn = this.betOn == HAND_PLAYER? "player" : "banker";
+
+        this.message = `Last hand: player=${player}, banker=${dealer} you bet on the ${betOn} you ${win ? 'won ' + reward : 'lost ' + cost}`
+
+        this.buttons = this.redealButtons;
+        this.draw();
+    }
+
+
+    draw() {
+        this.drawCls()
+        this.drawButtons();
+
+        this.drawMessage();
+
+        if (this.scene !== SCENE_START) {
+            this.drawMoney();
+            this.drawHand(HAND_PLAYER)
+            this.drawHand(HAND_DEALER)
+            if (this.natural) {
+                this.drawNaturals();
+            }
+        }
+
+        this.screenctx.drawImage(this.prerender, 0, 0)
+    }
+
+
+
+    drawMoney() {
+        this.ctx.save();
+        let score = `Money: ${this.money}`
+        let bet = `Bet: ${this.bet}\tPot: ${this.pot}`
+
+        this.ctx.textBaseline = "top"
+        this.ctx.font = '28px arial black';
+        this.ctx.lineWidth = gameTheme.numLine;
+        this.ctx.fillStyle = gameTheme.numTextStroke;
+        this.ctx.strokeStyle = gameTheme.numTextStroke;
+        this.ctx.fillText(score, 550, 50);
+        this.ctx.fillText(bet, 150, 50);
+        this.ctx.restore();
+    }
+
+    drawMessage() {
+        this.ctx.save();
+
+        this.ctx.textBaseline = "top"
+        this.ctx.font = '18px arial black';
+        this.ctx.lineWidth = gameTheme.numLine;
+        this.ctx.fillStyle = gameTheme.numTextStroke;
+        this.ctx.strokeStyle = gameTheme.numTextStroke;
+        this.ctx.fillText(this.message, 20, 10);
+
+        this.ctx.restore();
+    }
+
+    drawNaturals() {
+        this.ctx.save();
+        let msg = "NATURAL";
+        this.ctx.textBaseline = "top"
+        this.ctx.font = '96px arial black';
+        this.ctx.lineWidth = gameTheme.numLine;
+        this.ctx.fillStyle = gameTheme.numText;
+        this.ctx.strokeStyle = gameTheme.numTextStroke;
+        this.ctx.fillText(msg, 175, 420);
+        this.ctx.strokeText(msg, 175, 420);
+        this.ctx.restore();
+    }
+
+    drawHand(handId) {
+        let hand = this.hands[handId];
+
+        this.ctx.save();
+        let score = this.getScore(handId);
+        this.ctx.font = '48px arial black';
+        this.ctx.lineWidth = gameTheme.numLine;
+        this.ctx.fillStyle = gameTheme.numText;
+        this.ctx.strokeStyle = gameTheme.numTextStroke;
+        if (handId === HAND_PLAYER) {
+            this.ctx.fillText(score, 100, 250);
+            this.ctx.strokeText(score, 100, 250);
+            this.ctx.translate(80, 250);
+            this.ctx.scale(0.35, 0.35)
+        } else {
+            this.ctx.fillText(score, 500, 250);
+            this.ctx.strokeText(score, 500, 250);
+            this.ctx.translate(480, 250);
+            this.ctx.scale(0.35, 0.35)
+        }
+
+
+        let y = 0;
+        let offY = Render.szCanvas.h / 4;
+
+        for (let card of hand.cards) {
+            this.ctx.save();
+            this.ctx.translate(0, offY * y);
+
+            this.ctx.translate(Render.szCanvas.w / 2, Render.szCanvas.h / 2);
+            this.ctx.rotate((y % 2 * 90 + 45) * Math.PI / 180);
+            this.ctx.translate(-Render.szCanvas.w / 2, -Render.szCanvas.h / 2);
+
+            this.render.drawCard(cardTheme[card.color], card.num, card.type);
+            y++;
+
+            this.ctx.restore();
+        }
+        this.ctx.restore();
+    }
+
+    shuffle() {
+        let array = this.cards;
+        if (this.cards.length < 2) return;
+
+        let i = 0
+            , j = 0
+            , temp = null
+        for (i = this.cards.length - 1; i > 0; i -= 1) {
+            j = Math.floor(Math.random() * (i + 1))
+            temp = this.cards[i]
+            this.cards[i] = this.cards[j]
+            this.cards[j] = temp
+        }
+        //m Test naturals this.cards.push(0,32,5,5,7,63,5,5,0,8,5,5,7,15);
+
+        console.log('shuffling ', this.cards.length, 'cards')
+    }
+
+    discardHands() {
+        for (let hand of this.hands) {
+            for (let card of hand.cards ? hand.cards : []) {
+                this.discards.push(card.card);
+            }
+            hand.cards = []
+        }
+    }
+
+    getScore(handId) {
+        let hand = this.hands[handId];
+        let score = hand.cards[0].num;
+        for (let i = 2; i < hand.cards.length; i += 2) {
+            let opcode = hand.cards[i - 1].opcode;
+            let operand = hand.cards[i].num;
+            if (opcode == LOGIC_AND) {
+                score = score & operand;
+            } else if (opcode == LOGIC_NAND) {
+                score = ~(score & operand);
+            } else if (opcode == LOGIC_OR) {
+                score = score | operand;
+            } else if (opcode == LOGIC_NOR) {
+                score = ~(score | operand);
+            }
+        }
+        score = score & 7;
+        return score;
+    }
+
+    addCard(handId) {
+        let hand = this.hands[handId];
+        let card = this.deal()
+        hand.cards.push(card);
+        return card;
+    }
+
+    dealHands() {
+        this.discardHands();
+        for (let hand of this.hands) {
+            for (let c = 0; c < this.handsize; c++) {
+                if (!hand.cards) hand.cards = [];
+                hand.cards.push(this.deal());
+            }
+        }
+    }
+
+    deal() {
+        if (this.cards.length < 1) {
+            this.cards = this.discards;
+            this.discards = [];
+            this.shuffle();
+        }
+        let card = this.cards.pop();
+
+        let num = card & this.nummask;
+        let type = (card & this.typemask) >> this.typeshift;
+        let color = (card & this.colormask) >> this.colorshift;
+        let opcode = (num + type) % 4
+        return { color: color, type: type, num: num, card: card, opcode: opcode }
+    }
+
+    buildDeck() {
+        let end = this.startData.maxnum * this.startData.types * this.startData.colors;
+
+        this.cards = [];
+        this.discards = [];
+        for (let x = 0; x < end; x++) {
+            this.cards.push(x);
+        }
+    }
+}
+
+
+
+
+
+/*
+
+    0    0    1   1
+AND    
+    0    1    0   1
+    =================
+    0    0    0   1
+
+    0    0    1   1
+OR    
+    0    1    0   1
+    =================
+    0    1    1   1
+
+    0    0    1   1
+NOR    
+    0    1    0   1
+    =================
+    1    0    0   0
+    
+*/
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__.p + "nibble-info.html";
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__.p + "gates-info.html";
+
+/***/ }),
+/* 15 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__.p + "games.html";
 
 /***/ })
 /******/ ]);

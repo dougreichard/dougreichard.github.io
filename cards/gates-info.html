@@ -1,0 +1,371 @@
+<h1 id="rules-of-gates">Rules of Gates</h1>
+<p><a href="index.html">play game</a></p>
+<h2 id="basics">Basics</h2>
+<p>Each hand is dealt a bit card followed by a opcode card.</p>
+<p>Then betting occurs. </p>
+<p>A third card (second bit card) is added and a total score is calculated by using the opcode </p>
+<p>score = first-bit-card opcode second-bit-card</p>
+<p>opcodes are based on logic gates.</p>
+<p>AND, OR, NOR, NAND, XOR</p>
+<p>Logic gate rule are described later in this page.</p>
+<h2 id="betting-and-winning">Betting and Winning</h2>
+<p>You bet on which hand will win.</p>
+<p>You can bet a set amount (10) to a pot.</p>
+<p>Currently there is a pot limit of 30 total.</p>
+<h3 id="who-wins">Who wins</h3>
+<p>The banker vs. the player.</p>
+<p>The winner is the hand with the highest total</p>
+<p>Hand totals are 0-7.</p>
+<p>Banker wins all ties.</p>
+<h2 id="hit-rules">Hit rules</h2>
+<p>When playing with the hit rule, the play and banker can be be required to Draw an additional opcode and bit card. Then taking the total.</p>
+<p>score = (first-bit-card opcode second-bit-card) opcode third-bit-card</p>
+<p>The rule on when to draw are based on both hand score.</p>
+<h3 id="player-draws">Player Draws</h3>
+<p>The player draws:</p>
+<ul>
+<li>If the player total is 5 or less and the banker is not 6 or 7</li>
+</ul>
+<h3 id="banker-draws">Banker draws</h3>
+<p>The banker draws:</p>
+<ul>
+<li>If the banker total is 1 or less  then the banker draws a card, regardless of what the player&#39;s third card is.</li>
+<li>If the banker total is 2, then the bank draws a third card unless the player&#39;s third card was 6 </li>
+<li>If the banker total is 3, then the bank draws a third card if the player&#39;s third card was 2, 3, 4, 5</li>
+<li>If the banker total is 4, then the bank draws a third card if the player&#39;s third card was a 4, 5 </li>
+<li>If the banker total is 5, then the banker stands.</li>
+</ul>
+<h1 id="logic-gates">Logic Gates</h1>
+<p>Are the foundation for computers.</p>
+<p><a href="https://en.wikipedia.org/wiki/Logic_gate">Read more on wikipedia</a></p>
+<h2 id="and">AND</h2>
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+<th>A&amp;B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>So, if you have 5 AND 7 it results in 5</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>4</th>
+<th>2</th>
+<th>1</th>
+<th>int</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>5</td>
+</tr>
+<tr>
+<td>and</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>7</td>
+</tr>
+<tr>
+<td></td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+<h2 id="or">OR</h2>
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+<th>A&amp;B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>So, if you have 5 OR 7 it results in 7</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>4</th>
+<th>2</th>
+<th>1</th>
+<th>int</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>5</td>
+</tr>
+<tr>
+<td>or</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>7</td>
+</tr>
+<tr>
+<td></td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>7</td>
+</tr>
+</tbody>
+</table>
+<h2 id="nand">NAND</h2>
+<p>NAND is a negated AND. So, the results are the opposite of an AND.</p>
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+<th>A&amp;B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>So, if you have 5 AND 7 it results in 2</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>4</th>
+<th>2</th>
+<th>1</th>
+<th>int</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>5</td>
+</tr>
+<tr>
+<td>and</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>7</td>
+</tr>
+<tr>
+<td></td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<h2 id="nor">NOR</h2>
+<p>NOR is a negated OR. The results are the opposite of OR</p>
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+<th>A&amp;B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>So, if you have 5 OR 7 it results in 0</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>4</th>
+<th>2</th>
+<th>1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>nor</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>7</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<h2 id="xor">XOR</h2>
+<p>Xor is on face cards.</p>
+<p>XOR is a exclusive OR. Meaning only one bit can be on.</p>
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+<th>A&amp;B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>So, if you have 5 OR 7 it results in 2</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>4</th>
+<th>2</th>
+<th>1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>xor</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>7</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
