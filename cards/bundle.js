@@ -854,7 +854,7 @@ class PlayDeck extends GameView {
             { label: "Hit <15", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerMust(15) },
             { label: "Rules", x: 300, y: startY += 80, w: 300, h: 60, click: () => window.location.replace('nibble-info.html') },
         ]
-        
+
 
         this.render = new Render(this.ctx);
         this.screenctx = screenctx;
@@ -943,7 +943,7 @@ class PlayDeck extends GameView {
         let isNatural = this.isNatural()
 
         if (!isNatural && (player <= 20 && this.dealerType === DEALER_MUST)) {
-            while (dealer < this.dealerMust) {
+            while (dealer < this.dealerMust && dealer < player) {
 
                 this.addCard(HAND_DEALER)
                 dealer = this.getScore(HAND_DEALER);
