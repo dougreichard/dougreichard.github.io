@@ -97,30 +97,39 @@ class GameView extends BaseRender {
         this.ctx.fillRect(0, 0, 1280, 1024)
     }
 
-    drawButtons(){
-        for (let button of this.buttons) {
-            this.drawButton(button.label, button.x, button.y, button.w, button.h)
+    drawButtons(buttons){
+        for (let button of buttons) {
+            this.drawButton(button)// .label, button.x, button.y, button.w, button.h)
         }
     }
 
     
 
-    drawButton(label, x, y, w, h) {
+    drawButton(button) {
+        let label = button.label
+        if (button.toggle){
+            label = String.fromCharCode(button.checked ?9635:9634) + label
+            //label += String.fromCharCode(9673)
+            //label += String.fromCharCode(9678)
+        }
 
         this.ctx.save();
-        this.ctx.font = '40px arial black';
+        this.ctx.font = '30px arial black';
         this.ctx.lineWidth = gameTheme.numLine;
         let text = this.ctx.measureText(label);
         let height = text.emHeightAscent ? text.emHeightAscent : this.ctx.measureText('M').width;
 
-        this.ctx.fillStyle = gameTheme.boxLight;
-        this.ctx.strokeStyle = gameTheme.boxStroke;
-        this.roundRect(x, y, w, h, 20)
-        this.ctx.fill();
-        this.ctx.stroke();
+        if (!button.toggle) {
+            this.ctx.fillStyle = gameTheme.boxLight;
+            this.ctx.strokeStyle = gameTheme.boxStroke;
+            this.roundRect(button.x, button.y, button.w, button.h, 10)
+            this.ctx.fill();
+            this.ctx.stroke();
+        }
+        
         this.ctx.textBaseline = "middle"
         this.ctx.fillStyle = gameTheme.boxStroke;
-        this.ctx.fillText(label, x + w / 2 - (text.width / 2), y + h / 2)
+        this.ctx.fillText(label, button.x + button.w / 2 - (text.width / 2), button.y + button.h / 2)
         this.ctx.restore();
 
     }
@@ -337,7 +346,7 @@ class NibbleSquareRender extends BaseRender {
   }
 
   drawCastles(theme, type) {
-    for (let bottom = 1; bottom > -2; bottom -=2) {
+    for (let bottom = 1; bottom > -2; bottom -= 2) {
       for (let side = 1; side > -2; side -= 2) {
         //console.log(`bottom: ${bottom} side: ${side}`)
 
@@ -347,15 +356,15 @@ class NibbleSquareRender extends BaseRender {
           this.ctx.scale(side, side);
           this.ctx.translate(-NibbleSquareRender.szCanvas.w, -NibbleSquareRender.szCanvas.h);
         }
-        this.ctx.translate(NibbleSquareRender.offCastle.x-bottom*80, NibbleSquareRender.offCastle.y);
-        
+        this.ctx.translate(NibbleSquareRender.offCastle.x - bottom * 80, NibbleSquareRender.offCastle.y);
+
         this.ctx.scale(NibbleSquareRender.scaleCastle, NibbleSquareRender.scaleCastle);
-        
+
         castle.draw(this.ctx);
         this.ctx.fillStyle = theme.castleLight;
         this.ctx.strokeStyle = theme.castleStroke;
-        this.ctx.lineWidth = theme.castleLine * (1/ NibbleSquareRender.scaleCastle);
-        if ((type == 1 && bottom==1) || (type == 2 && bottom==-1) || type > 2) {
+        this.ctx.lineWidth = theme.castleLine * (1 / NibbleSquareRender.scaleCastle);
+        if ((type == 1 && bottom == 1) || (type == 2 && bottom == -1) || type > 2) {
           this.ctx.fillStyle = theme.castleDark;
         }
         this.ctx.fill();
@@ -369,8 +378,8 @@ class NibbleSquareRender extends BaseRender {
 
     let tick = 0;
     let pad = (num < 8) ? NibbleSquareRender.szNumber.w : 0;
-    let size = (num < 8) ? NibbleSquareRender.szNumber.w*5 : NibbleSquareRender.szNumber.w*7;
-    let left = size/2;
+    let size = (num < 8) ? NibbleSquareRender.szNumber.w * 5 : NibbleSquareRender.szNumber.w * 7;
+    let left = size / 2;
 
     this.ctx.save();
     for (let bit = (num > 7) ? 4 : 3; bit >= 1; bit--) {
@@ -386,25 +395,25 @@ class NibbleSquareRender extends BaseRender {
         // Draw number
         this.ctx.font = '48px arial black';
         this.ctx.lineWidth = theme.numLine;
-        
+
         let opcode = num.toString();
         let text = this.ctx.measureText(opcode);
-        let height = text.emHeightAscent ? text.emHeightAscent:this.ctx.measureText('M').width;
+        let height = text.emHeightAscent ? text.emHeightAscent : this.ctx.measureText('M').width;
 
         this.ctx.save();
-        this.ctx.translate(NibbleSquareRender.szCanvas.w/2-(text.width/2), NibbleSquareRender.offNumber.y+NibbleSquareRender.szNumber.h+height);
+        this.ctx.translate(NibbleSquareRender.szCanvas.w / 2 - (text.width / 2), NibbleSquareRender.offNumber.y + NibbleSquareRender.szNumber.h + height);
         this.ctx.fillStyle = theme.numText;
         this.ctx.strokeStyle = theme.numTextStroke;
-        this.ctx.fillText(opcode, 0, 0);   
-        this.ctx.strokeText(opcode, 0, 0);   
+        this.ctx.fillText(opcode, 0, 0);
+        this.ctx.strokeText(opcode, 0, 0);
         this.ctx.restore();
 
-        
-        this.ctx.translate(NibbleSquareRender.offNumber.x - left + (2 * tick * NibbleSquareRender.szNumber.w), 
-            NibbleSquareRender.offNumber.y);
+
+        this.ctx.translate(NibbleSquareRender.offNumber.x - left + (2 * tick * NibbleSquareRender.szNumber.w),
+          NibbleSquareRender.offNumber.y);
 
         this.roundRect(0, 0, NibbleSquareRender.szNumber.w, NibbleSquareRender.szNumber.h, 3);
-        
+
 
         this.ctx.fillStyle = theme.numDark;
         this.ctx.strokeStyle = theme.numStroke;
@@ -422,6 +431,38 @@ class NibbleSquareRender extends BaseRender {
     this.ctx.restore();
   }
 
+  drawFaceCardId(theme, num) {
+    let faces = ['S', 'A', 'U', 'K']
+
+    this.ctx.save();
+    for (let r = 0; r < 2; r++) {
+      this.ctx.save();
+
+      if (r) {
+        this.ctx.scale(-1, -1);
+        this.ctx.translate(-NibbleSquareRender.szCanvas.w, -NibbleSquareRender.szCanvas.h);
+      }
+
+      // Draw number
+      this.ctx.font = '48px arial black';
+      this.ctx.lineWidth = theme.numLine;
+
+      let opcode = faces[num];
+      let text = this.ctx.measureText(opcode);
+      let height = text.emHeightAscent ? text.emHeightAscent : this.ctx.measureText('M').width;
+
+      this.ctx.translate(NibbleSquareRender.szCanvas.w / 2 - (text.width / 2), NibbleSquareRender.offNumber.y + NibbleSquareRender.szNumber.h + height);
+      this.ctx.fillStyle = theme.numText;
+      this.ctx.strokeStyle = theme.numTextStroke;
+      this.ctx.fillText(opcode, 0, 0);
+      this.ctx.strokeText(opcode, 0, 0);
+      this.ctx.restore();
+
+    }
+    this.ctx.restore();
+  }
+
+
   drawOpcodes(theme, num, type) {
     let opcodes = ["OR", "AND", "NOR", "NAND"];
     for (let side = 1; side > -2; side -= 2) {
@@ -432,28 +473,31 @@ class NibbleSquareRender extends BaseRender {
         this.ctx.translate(-NibbleSquareRender.szCanvas.w, -NibbleSquareRender.szCanvas.h);
       }
 
-      this.ctx.translate(NibbleSquareRender.szCanvas.w/2, NibbleSquareRender.szCanvas.h/2);
-      this.ctx.rotate(Math.PI/2);
-      this.ctx.translate(-NibbleSquareRender.szCanvas.w/2, -NibbleSquareRender.szCanvas.h/2);
+      this.ctx.translate(NibbleSquareRender.szCanvas.w / 2, NibbleSquareRender.szCanvas.h / 2);
+      this.ctx.rotate(Math.PI / 2);
+      this.ctx.translate(-NibbleSquareRender.szCanvas.w / 2, -NibbleSquareRender.szCanvas.h / 2);
 
-      let opcode = opcodes[(num+type)%4];
+      let opcode = opcodes[(num + type) % 4];
+      if (type === 4) {
+        opcode = 'XOR'
+      }
 
       this.ctx.save()
-      
-      this.ctx.translate(NibbleSquareRender.szCanvas.w/2-100, 5);
-      this.ctx.scale(2,2);
-      Logic['draw'+opcode](this.ctx, theme.opcode);
+
+      this.ctx.translate(NibbleSquareRender.szCanvas.w / 2 - 100, 5);
+      this.ctx.scale(2, 2);
+      Logic['draw' + opcode](this.ctx, theme.opcode);
       this.ctx.restore()
-      
+
 
       this.ctx.font = '28px arial black';
-      
+
       let text = this.ctx.measureText(opcode);
-      this.ctx.translate(NibbleSquareRender.offOpcode.x-(text.width/2), NibbleSquareRender.offOpcode.y);
+      this.ctx.translate(NibbleSquareRender.offOpcode.x - (text.width / 2), NibbleSquareRender.offOpcode.y);
 
       this.ctx.fillStyle = theme.opcode;
-      this.ctx.fillText(opcode, 0, 0);      
-     
+      this.ctx.fillText(opcode, 0, 0);
+
       this.ctx.restore();
     }
 
@@ -526,13 +570,20 @@ class NibbleSquareRender extends BaseRender {
     this.ctx.restore();
   }
 
+  drawFaceIcons(theme, number) {
+    this.drawWhaleBox(theme);
+    //this.ctx.save();
+    //this.ctx.restore();
+  }
+
+
   drawWhaleBox(theme) {
-    let off = NibbleSquareRender.szWhale.h*2.25;
+    let off = NibbleSquareRender.szWhale.h * 2.25;
     this.ctx.save();
     this.ctx.fillStyle = theme;
     this.ctx.strokeStyle = theme;
 
-    this.roundRect(off, off, NibbleSquareRender.szCanvas.w - 2 * off, 
+    this.roundRect(off, off, NibbleSquareRender.szCanvas.w - 2 * off,
       NibbleSquareRender.szCanvas.h - 2 * off, -90);
 
     this.ctx.strokeStyle = theme.boxStroke;
@@ -543,17 +594,37 @@ class NibbleSquareRender extends BaseRender {
     this.ctx.restore();
   }
 
-  drawCard(theme, num, castleType) {
+  drawCard(theme, num, castleType, face, back) {
     this.ctx.save();
-   
-    this.drawBack(theme);
+
+    if (back) {
+      this.drawBack(theme);
+    }
+
 
     this.ctx.translate(NibbleSquareRender.szCanvas.w / 2, NibbleSquareRender.szCanvas.h / 2);
     this.ctx.rotate(-45 * Math.PI / 180);
     this.ctx.translate(-NibbleSquareRender.szCanvas.w / 2, -NibbleSquareRender.szCanvas.h / 2);
-    this.drawCardContent(theme, num, castleType);
+    if (face) {
+      this.drawFaceCardContent(theme, num, castleType);
+    } else {
+      this.drawCardContent(theme, num, castleType);
+    }
     this.ctx.restore();
   }
+  drawFaceCardContent(theme, num, castleType) {
+    this.ctx.save();
+    // Draw any accents
+    this.drawOpcodes(theme, num, 4);
+    // Draw Numbers 
+    this.drawFaceCardId(theme, num);
+    // Draw Number Icons
+    this.drawFaceIcons(theme, num);
+    // Draw Arrows
+    this.drawCastles(theme, castleType);
+    this.ctx.restore();
+  }
+
   drawCardContent(theme, num, castleType) {
     this.ctx.save();
     // Draw any accents
@@ -561,7 +632,7 @@ class NibbleSquareRender extends BaseRender {
     // Draw Numbers 
     this.drawNumbers(theme, num);
     // Draw Number Icons
-    this.drawNumberIcons(theme, num); 
+    this.drawNumberIcons(theme, num);
     // Draw Arrows
     this.drawCastles(theme, castleType);
     this.ctx.restore();
@@ -612,7 +683,7 @@ NibbleSquareRender.offNumber = { x: NibbleSquareRender.szCanvas.w / 2, y: -10 };
 NibbleSquareRender.szCastle = { w: 210, h: 298 };
 NibbleSquareRender.scaleCastle = 0.2;
 NibbleSquareRender.szCastleScaled = { w: NibbleSquareRender.szCastle.w * NibbleSquareRender.scaleCastle, h: NibbleSquareRender.szCastle.h * NibbleSquareRender.scaleCastle };
-NibbleSquareRender.offCastle = { x: NibbleSquareRender.szCanvas.w / 2 - NibbleSquareRender.szCastleScaled.w/2, y: NibbleSquareRender.offNumber.y + 55 };
+NibbleSquareRender.offCastle = { x: NibbleSquareRender.szCanvas.w / 2 - NibbleSquareRender.szCastleScaled.w / 2, y: NibbleSquareRender.offNumber.y + 55 };
 NibbleSquareRender.offOpcode = { x: (NibbleSquareRender.szCanvas.w / 2), y: 0 };
 
 module.exports = NibbleSquareRender
@@ -780,7 +851,7 @@ class MainMenu extends GameView { // extends NibbleDeck {
     draw() {
         this.drawCls();
 
-        this.drawButtons();
+        this.drawButtons(this.buttons);
         this.renderToScreen();
     }
     renderToScreen() {
@@ -838,22 +909,37 @@ class PlayDeck extends GameView {
         }
 
         this.gameButtons = [
-            { label: "hit", x: 700, y: 70, w: 200, h: 60, click: () => this.clickHit() },
-            { label: "stay", x: 700, y: 150, w: 200, h: 60, click: () => this.clickStay() },
-            { label: "restart", x: 700, y: 650, w: 200, h: 60, click: () => this.sceneStart() }
+            { label: "hit", x: 700, y: 70, w: 200, h: 40, click: () => this.clickHit() },
+            { label: "stay", x: 700, y: 130, w: 200, h: 40, click: () => this.clickStay() },
+            { label: "restart", x: 10, y: 10, w: 140, h: 30, click: () => this.sceneStart() }
+        ]
+
+        this.dealButtons = [
+            { label: "deal", x: 700, y: 70, w: 200, h: 40, click: () => this.clickDeal() },
+            { label: "restart", x: 10, y: 10, w: 140, h: 30, click: () => this.sceneStart() }
+        ]
+
+        this.replayButtons = [
+            { label: "restart", x: 10, y: 10, w: 140, h: 30, click: () => this.sceneStart() }
         ]
 
 
         let startY = 0
         this.startButtons = [
-            { label: "Dice-10", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerDice(DEALER_DICE_D10) },
-            { label: "Dice-248", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerDice(DEALER_DICE_D248) },
-            { label: "Hit <10", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerMust(10) },
-            { label: "Hit <12", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerMust(12) },
-            { label: "Hit <14", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerMust(14) },
-            { label: "Hit <15", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickDealerMust(15) },
-            { label: "Rules", x: 300, y: startY += 80, w: 300, h: 60, click: () => window.location.replace('nibble-info.html') },
+            { label: "Dice-10", x: 300, y: startY += 60, w: 300, h: 40, click: () => this.clickDealerDice(DEALER_DICE_D10) },
+            { label: "Dice-248", x: 300, y: startY += 60, w: 300, h: 40, click: () => this.clickDealerDice(DEALER_DICE_D248) },
+            { label: "Hit <12", x: 300, y: startY += 60, w: 300, h: 40, click: () => this.clickDealerMust(12) },
+            { label: "Hit <13", x: 300, y: startY += 60, w: 300, h: 40, click: () => this.clickDealerMust(13) },
+            { label: "Hit <14", x: 300, y: startY += 60, w: 300, h: 40, click: () => this.clickDealerMust(14) },
+            { label: "Hit <15", x: 300, y: startY += 60, w: 300, h: 40, click: () => this.clickDealerMust(15) },
+            { label: "Rules", x: 300, y: startY += 60, w: 300, h: 40, click: () => window.location.replace('nibble-info.html') },
         ]
+
+        this.optionsButtons = [
+            { label: "Facecards", toggle: true, checked:false, x: 650, 
+                y:  260, w: 300, h: 40, click: () => this.clickFacecards() }
+        ]
+        
 
 
         this.render = new Render(this.ctx);
@@ -864,21 +950,34 @@ class PlayDeck extends GameView {
     }
 
     sceneStart() {
-        this.buildDeck();
-        this.shuffle();
-
-        this.handsize = 2;
-        this.hands = [{}]
-
         this.scene = SCENE_START;
         this.buttons = this.startButtons
+        this.buttons = this.buttons.concat(this.optionsButtons)
         this.money = 100;
         this.bet = 10;
         this.message = "Let's play!"
         this.draw();
     }
 
+    createDeck(hands) {
+        this.buildDeck();
+        this.shuffle();
 
+        this.handsize = 2;
+
+        this.hands = []
+        for(let h=0; h< hands;h++) {
+            this.hands.push({})
+        }
+
+    }
+
+
+    clickFacecards() {
+        this.optionsButtons[0].checked = !this.optionsButtons[0].checked
+        this.faceCards = this.optionsButtons[0].checked
+        this.draw();
+    }
     clickHit() {
         this.addCard(HAND_PLAYER);
         this.updateGame();
@@ -888,8 +987,13 @@ class PlayDeck extends GameView {
     }
     clickDealerDice(type) {
         this.dealerType = type;
+        this.createDeck(1)
         this.scenePlay();
     }
+    clickDeal() {
+        this.scenePlay();
+    }
+
     scenePlay() {
         this.naturals = false;
         this.scene = SCENE_PLAY;
@@ -901,29 +1005,27 @@ class PlayDeck extends GameView {
     clickDealerMust(num) {
         this.dealerType = DEALER_MUST;
         this.dealerMust = num
-        this.hands = [{}, {}];
+        this.createDeck(2)
         this.scenePlay();
     }
 
     updateGame() {
         let player = this.getScore(HAND_PLAYER)
 
-        if (player > 20) {
+        if (player.total > 20) {
             this.endHand();
-        } if (this.isNatural()) {
+        } if (this.isNatural(HAND_PLAYER)) {
             this.endHand();
         } else {
             this.draw();
         }
     }
 
-    isNatural() {
+    isNatural(hand) {
         // Check for naturals before making deal take cards
-        if (this.hands[HAND_PLAYER].cards.length == 2) {
-            let card1 = this.hands[HAND_PLAYER].cards[0].num;
-            let card2 = this.hands[HAND_PLAYER].cards[1].num;
-            if (card1 == card2 && (card1 === 0 || card1 === 7)) {
-                this.naturals = card1 + 1;
+        if (this.hands[hand].cards.length == 2) {
+            let numScore = this.getScore(hand).num
+            if (numScore ===0 || numScore == 14){
                 return true;
             }
         }
@@ -937,16 +1039,18 @@ class PlayDeck extends GameView {
         let handId = this.dealerType == DEALER_MUST ? HAND_DEALER : HAND_PLAYER;
         let rewardsCards = this.hands[HAND_PLAYER].cards.length;
 
-        let player = this.getScore(HAND_PLAYER)
-        let dealer = this.dealerType === DEALER_MUST ? this.getScore(HAND_DEALER) : this.dealerDice();
+        let player = this.getScore(HAND_PLAYER).total
+        let dealer = this.dealerType === DEALER_MUST ? this.getScore(HAND_DEALER).total : this.dealerDice();
 
-        let isNatural = this.isNatural()
+        let isNatural = this.isNatural(HAND_PLAYER)
+        let isNaturalDealer = this.isNatural(HAND_DEALER);
 
-        if (!isNatural && (player <= 20 && this.dealerType === DEALER_MUST)) {
+        if (!isNatural && !isNaturalDealer && (player <= 20 && this.dealerType === DEALER_MUST)) {
             while (dealer < this.dealerMust && dealer < player) {
-
+                isNaturalDealer = this.isNatural(HAND_DEALER)
+                if (isNaturalDealer) break;
                 this.addCard(HAND_DEALER)
-                dealer = this.getScore(HAND_DEALER);
+                dealer = this.getScore(HAND_DEALER).total;
             }
         }
 
@@ -958,12 +1062,19 @@ class PlayDeck extends GameView {
 
         let reward = this.bet * Math.pow(2, rewardsCards - 2);
         let win = false;
-        if (isNatural) {
-            reward = this.bet * 4;
+
+        this.naturals = isNatural || isNaturalDealer;
+
+        if (isNaturalDealer) {
+            if (cost < this.bet*2) {
+                cost = this.bet*2;
+            }
+            this.money -= cost;
+        } else if (isNatural) {
+            reward = this.bet * 2;
             this.money += reward;
             win = true;
-        }
-        if (dealer > 20 && player <= 20) {
+        } else if (dealer > 20 && player <= 20) {
             this.money += reward;
             win = true;
         } else if (player > 20) {
@@ -978,18 +1089,21 @@ class PlayDeck extends GameView {
             this.money -= cost;
         }
 
-        this.message = `Last hand you had ${player} the dealer had ${dealer} you ${win ? 'won ' + reward : 'lost ' + cost}`
+        if (isNaturalDealer) {
+            this.message = `The dealer had a Natrual win you lost ${cost}`
+        } else if (isNatural) {
+            this.message = `You had a Natrual win you won ${reward}`
+        } else {
+            this.message = `Last hand you had ${player} the dealer had ${dealer} you ${win ? 'won ' + reward : 'lost ' + cost}`
+        }
+        
 
-        this.buttons = [];
+        if (this.money <= 0) {
+            this.buttons = this.replayButtons
+        } else {
+            this.buttons = this.dealButtons
+        }
 
-        setTimeout(() => {
-
-            if (this.money <= 0) {
-                this.sceneStart();
-            } else {
-                this.scenePlay();
-            }
-        }, 3000)
         this.draw();
     }
 
@@ -998,9 +1112,8 @@ class PlayDeck extends GameView {
         this.ctx.fillStyle = gameTheme.base
         this.ctx.fillRect(0, 0, 1280, 1024)
 
-        for (let button of this.buttons) {
-            this.drawButton(button.label, button.x, button.y, button.w, button.h)
-        }
+        this.drawButtons(this.buttons);
+      
         this.drawMessage();
 
         if (this.scene !== SCENE_START) {
@@ -1010,6 +1123,8 @@ class PlayDeck extends GameView {
             if (this.naturals) {
                 this.drawNaturals();
             }
+        } else {
+            this.drawButtons(this.optionsButtons);
         }
 
         this.screenctx.drawImage(this.prerender, 0, 0)
@@ -1019,7 +1134,7 @@ class PlayDeck extends GameView {
     drawDealer() {
         let dealer = this.dealerDiceValue;
         if (this.dealerType === DEALER_MUST) {
-            dealer = this.getScore(HAND_DEALER);
+            dealer = this.getScore(HAND_DEALER).total;
             this.drawHand(HAND_DEALER)
         } else if (this.scene != SCENE_DEALER) return;
 
@@ -1027,10 +1142,11 @@ class PlayDeck extends GameView {
         let score = `Dealer ${dealer}`
         this.ctx.font = '28px arial black';
         this.ctx.fillStyle = gameTheme.numStroke;
-        this.ctx.fillText(score, 20, 130);
+        this.ctx.fillText(score, 20, 180);
         this.ctx.restore();
     }
 
+    
     drawMoney() {
         this.ctx.save();
         let score = `Money: ${this.money}`
@@ -1053,7 +1169,7 @@ class PlayDeck extends GameView {
         this.ctx.lineWidth = gameTheme.numLine;
         this.ctx.fillStyle = gameTheme.numTextStroke;
         this.ctx.strokeStyle = gameTheme.numTextStroke;
-        this.ctx.fillText(this.message, 20, 10);
+        this.ctx.fillText(this.message, 220, 10);
 
         this.ctx.restore();
     }
@@ -1066,29 +1182,29 @@ class PlayDeck extends GameView {
         this.ctx.lineWidth = gameTheme.numLine;
         this.ctx.fillStyle = gameTheme.numText;
         this.ctx.strokeStyle = gameTheme.numTextStroke;
-        this.ctx.fillText(msg, 100, 300);
-        this.ctx.strokeText(msg, 100, 300);
+        this.ctx.fillText(msg, 100, 400);
+        this.ctx.strokeText(msg, 100, 400);
         this.ctx.restore();
     }
 
     drawHand(handId) {
         let hand = this.hands[handId];
 
-
         this.ctx.save();
         let score = this.getScore(handId);
+        let scoreText = `${score.total} = ${score.num} + ${score.castles}`
         this.ctx.font = '48px arial black';
         this.ctx.lineWidth = gameTheme.numLine;
         this.ctx.fillStyle = gameTheme.numText;
         this.ctx.strokeStyle = gameTheme.numTextStroke;
         if (handId === HAND_PLAYER) {
-            this.ctx.fillText(score, 120, 100);
-            this.ctx.strokeText(score, 120, 100);
-            this.ctx.translate(80, 150);
+            this.ctx.fillText(scoreText, 100, 150);
+            this.ctx.strokeText(scoreText, 100, 150);
+            this.ctx.translate(80, 200);
             this.ctx.scale(0.40, 0.40)
         } else {
-            this.ctx.fillText(score, 620, 300);
-            this.ctx.strokeText(score, 620, 300);
+            this.ctx.fillText(scoreText, 590, 300);
+            this.ctx.strokeText(scoreText, 590, 300);
             this.ctx.translate(580, 350);
             this.ctx.scale(0.30, 0.30)
         }
@@ -1104,14 +1220,44 @@ class PlayDeck extends GameView {
             this.ctx.rotate(45 * Math.PI / 180);
             this.ctx.translate(-Render.szCanvas.w / 2, -Render.szCanvas.h / 2);
 
-            this.render.drawCard(cardTheme[card.color], card.num, card.type);
-            y++;
+            this.render.drawCard(cardTheme[card.color], card.num, card.type, card.face, true);
+            
 
             this.ctx.restore();
+
+            this.drawCastlePoints(y, card.type, Render.szCanvas.w / 2, offY * y)
+            y++;
+
             if (this.scene === SCENE_PLAY && handId === HAND_DEALER) break;
         }
         this.ctx.restore();
     }
+
+    drawCastlePoints(count, castles, x,y) {
+        this.ctx.save();
+        this.ctx.translate((Render.szCanvas.w / 2) + 110 ,y+35);
+
+        this.render.roundRect(0,0, 250,75)
+        this.ctx.fillStyle = gameTheme.numTextFill;
+        this.ctx.strokeStyle = gameTheme.numTextStroke;
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        let p = castles==0? 0 : castles==3? 2: 1;
+        let multi = Math.pow(2, count);
+        let points = p * multi;
+        let pointsText = `x${multi} = ${points}`
+
+        this.ctx.textBaseline = "top"
+        this.ctx.font = '48px arial black';
+        this.ctx.lineWidth = gameTheme.numLine;
+        this.ctx.fillStyle = gameTheme.numTextStroke;
+        this.ctx.strokeStyle = gameTheme.numTextStroke;
+        this.ctx.fillText(pointsText, 10, 0);
+
+        this.ctx.restore();
+    }
+
 
     shuffle() {
         let array = this.cards;
@@ -1165,16 +1311,22 @@ class PlayDeck extends GameView {
         let handScore = 0;
         let bitUp = 0;
         let bitDown = 0;
+        let numScore = 0;
         for (let card of hand.cards) {
             bitUp += (card.type & 1) * multi;
             bitDown += ((card.type & 2) / 2) * multi;
 
             multi *= 2;
-            handScore += card.num
+            if (!card.face) {
+                numScore += card.num
+            } else {
+                numScore += 0;
+            }
+            
             if (this.scene === SCENE_PLAY && handId === HAND_DEALER) break;
         }
-        handScore += bitUp + bitDown;
-        return handScore;
+        handScore = (bitUp + bitDown) + numScore;
+        return {total: handScore, castles: bitDown+bitUp, num: numScore}
     }
 
     addCard(handId) {
@@ -1199,11 +1351,21 @@ class PlayDeck extends GameView {
             this.shuffle();
         }
         let card = this.cards.pop();
-
         let num = card & this.nummask;
         let type = (card & this.typemask) >> this.typeshift;
         let color = (card & this.colormask) >> this.colorshift;
-        return { color: color, type: type, num: num, card: card }
+
+        let face = false;
+        if(card < 0) {
+            face = true;
+            card++;
+            num = -card & 3;
+            type = (-card >> 2) & 3;
+            color = (-card>> 4) & 3;
+        }
+                
+     
+        return { color: color, type: type, num: num, card: card, face: face }
     }
 
     buildDeck() {
@@ -1211,7 +1373,9 @@ class PlayDeck extends GameView {
 
         this.cards = [];
         this.discards = [];
-        for (let x = 0; x < end; x++) {
+        let start = 0;
+        if (this.faceCards) start = -4 * this.startData.types * this.startData.colors;
+        for (let x = start; x < end; x++) {
             this.cards.push(x);
         }
     }
@@ -1620,6 +1784,92 @@ Logic.drawOR = (ctx, color) => {
 	ctx.restore();
 }
 
+Logic.drawXOR = (ctx, color) => {
+	// #path3059
+	ctx.beginPath();
+	ctx.lineJoin = 'miter';
+	ctx.strokeStyle = color;
+	ctx.lineCap = 'butt';
+	ctx.lineWidth = 2.000000;
+	ctx.moveTo(70.000000, 25.000000);
+	ctx.bezierCurveTo(90.000000, 25.000000, 95.000000, 25.000000, 95.000000, 25.000000);
+	ctx.stroke();
+	
+// #path3061
+	ctx.beginPath();
+	ctx.lineJoin = 'miter';
+	ctx.strokeStyle = color
+	ctx.lineCap = 'butt';
+	ctx.lineWidth = 2.000000;
+	ctx.moveTo(30.385717, 15.000000);
+	ctx.lineTo(5.000000, 15.000000);
+	ctx.stroke();
+	
+// #path3944
+	ctx.beginPath();
+	ctx.lineJoin = 'miter';
+	ctx.strokeStyle = color
+	ctx.lineCap = 'butt';
+	ctx.lineWidth = 2.000000;
+	ctx.moveTo(31.362091, 35.000000);
+	ctx.lineTo(5.000000, 35.000000);
+	ctx.stroke();
+	
+// #g2560
+	ctx.save();
+	ctx.transform(1.000000, 0.000000, 0.000000, 1.000000, 26.500000, -39.500000);
+	
+// #path3516
+	ctx.beginPath();
+	ctx.lineJoin = 'miter';
+	ctx.lineCap = 'butt';
+	ctx.lineWidth = 3.000000;
+	ctx.fillStyle = color
+	ctx.moveTo(-2.250000, 81.500005);
+	ctx.bezierCurveTo(-3.847374, 84.144405, -4.500000, 84.500005, -4.500000, 84.500005);
+	ctx.lineTo(-8.156250, 84.500005);
+	ctx.lineTo(-6.156250, 82.062505);
+	ctx.bezierCurveTo(-6.156250, 82.062505, -0.500000, 75.062451, -0.500000, 64.500000);
+	ctx.bezierCurveTo(-0.500000, 53.937549, -6.156250, 46.937500, -6.156250, 46.937500);
+	ctx.lineTo(-8.156250, 44.500000);
+	ctx.lineTo(-4.500000, 44.500000);
+	ctx.bezierCurveTo(-3.718750, 45.437500, -3.078125, 46.156250, -2.281250, 47.500000);
+	ctx.bezierCurveTo(-0.408531, 50.599815, 2.500000, 56.526646, 2.500000, 64.500000);
+	ctx.bezierCurveTo(2.500000, 72.450650, -0.396697, 78.379425, -2.250000, 81.500005);
+	ctx.fill();
+	
+// #path4973
+	ctx.beginPath();
+	ctx.lineJoin = 'miter';
+	ctx.lineCap = 'butt';
+	ctx.lineWidth = 3.000000;
+	ctx.fillStyle = color
+	ctx.moveTo(-2.406250, 44.500000);
+	ctx.lineTo(-0.406250, 46.937500);
+	ctx.bezierCurveTo(-0.406250, 46.937500, 5.250000, 53.937549, 5.250000, 64.500000);
+	ctx.bezierCurveTo(5.250000, 75.062451, -0.406250, 82.062500, -0.406250, 82.062500);
+	ctx.lineTo(-2.406250, 84.500000);
+	ctx.lineTo(0.750000, 84.500000);
+	ctx.lineTo(14.750000, 84.500000);
+	ctx.bezierCurveTo(17.158076, 84.500001, 22.439699, 84.524510, 28.375000, 82.093750);
+	ctx.bezierCurveTo(34.310301, 79.662986, 40.911536, 74.750484, 46.062500, 65.218750);
+	ctx.lineTo(44.750000, 64.500000);
+	ctx.lineTo(46.062500, 63.781250);
+	ctx.bezierCurveTo(35.759387, 44.715590, 19.506574, 44.500000, 14.750000, 44.500000);
+	ctx.lineTo(0.750000, 44.500000);
+	ctx.moveTo(3.468750, 47.500000);
+	ctx.lineTo(14.750000, 47.500000);
+	ctx.bezierCurveTo(19.434173, 47.500000, 33.036850, 47.369793, 42.718750, 64.500000);
+	ctx.bezierCurveTo(37.951964, 72.929075, 32.197469, 77.183910, 27.000000, 79.312500);
+	ctx.bezierCurveTo(21.639339, 81.507924, 17.158075, 81.500001, 14.750000, 81.500000);
+	ctx.lineTo(3.500000, 81.500000);
+	ctx.bezierCurveTo(5.373588, 78.391566, 8.250000, 72.450650, 8.250000, 64.500000);
+	ctx.bezierCurveTo(8.250000, 56.526646, 5.341469, 50.599815, 3.468750, 47.500000);
+	ctx.fill();
+	ctx.restore();
+
+}
+
 module.exports = Logic;
 
 /***/ }),
@@ -1643,6 +1893,7 @@ const LOGIC_OR = 0;
 const LOGIC_AND = 1;
 const LOGIC_NOR = 2;
 const LOGIC_NAND = 3;
+const LOGIC_XOR = 4;
 
 
 
@@ -1687,7 +1938,11 @@ module.exports = class extends GameView {
 
 
         let startY = 0
+
         this.startButtons = [
+            { label: "Facecards", toggle: true, checked:false, 
+            x: 650, y:  260, w: 300, h: 40, click: () => this.clickFacecards() },
+
             { label: "gates hit", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickGates(true) },
             { label: "gates nohit", x: 300, y: startY += 80, w: 300, h: 60, click: () => this.clickGates(false) },
             { label: "Rules", x: 300, y: startY += 80, w: 300, h: 60, click: () => window.location.replace('gates-info.html') },
@@ -1698,18 +1953,18 @@ module.exports = class extends GameView {
     }
 
     sceneStart() {
-        this.buildDeck();
-        this.shuffle();
-
-        this.handsize = 2;
-        this.hands = [{}, {}]
-
         this.scene = SCENE_START;
         this.buttons = this.startButtons
         this.money = 100;
         this.bet = 10;
         this.pot = 0;
         this.message = "Let's play!"
+        this.draw();
+    }
+
+    clickFacecards() {
+        this.startButtons[0].checked = !this.startButtons[0].checked
+        this.faceCards = this.startButtons[0].checked
         this.draw();
     }
 
@@ -1748,6 +2003,12 @@ module.exports = class extends GameView {
         this.draw();
     }
     clickGates(hitRule) {
+        this.buildDeck();
+        this.shuffle();
+
+        this.handsize = 2;
+        this.hands = [{}, {}]
+
         this.hitRule = hitRule
         this.scenePlay();
     }
@@ -1830,7 +2091,7 @@ module.exports = class extends GameView {
 
     draw() {
         this.drawCls()
-        this.drawButtons();
+        this.drawButtons(this.buttons);
 
         this.drawMessage();
 
@@ -1922,7 +2183,7 @@ module.exports = class extends GameView {
             this.ctx.rotate((y % 2 * 90 + 45) * Math.PI / 180);
             this.ctx.translate(-Render.szCanvas.w / 2, -Render.szCanvas.h / 2);
 
-            this.render.drawCard(cardTheme[card.color], card.num, card.type);
+            this.render.drawCard(cardTheme[card.color], card.num, card.type, card.face, true);
             y++;
 
             this.ctx.restore();
@@ -1971,6 +2232,8 @@ module.exports = class extends GameView {
                 score = score | operand;
             } else if (opcode == LOGIC_NOR) {
                 score = ~(score | operand);
+            } else if (opcode == LOGIC_XOR) {
+                score = score ^ operand;
             }
         }
         score = score & 7;
@@ -2001,12 +2264,22 @@ module.exports = class extends GameView {
             this.shuffle();
         }
         let card = this.cards.pop();
-
         let num = card & this.nummask;
         let type = (card & this.typemask) >> this.typeshift;
         let color = (card & this.colormask) >> this.colorshift;
         let opcode = (num + type) % 4
-        return { color: color, type: type, num: num, card: card, opcode: opcode }
+
+        let face = false;
+        if(card < 0) {
+            face = true;
+            card++;
+            num = -card & 3;
+            type = (-card >> 2) & 3;
+            color = (-card>> 4) & 3;
+            opcode = LOGIC_XOR;
+        }
+     
+        return { color: color, type: type, num: num, card: card, face: face, opcode: opcode }
     }
 
     buildDeck() {
@@ -2014,10 +2287,13 @@ module.exports = class extends GameView {
 
         this.cards = [];
         this.discards = [];
-        for (let x = 0; x < end; x++) {
+        let start = 0;
+        if (this.faceCards) start = -4 * this.startData.types * this.startData.colors;
+        for (let x = start; x < end; x++) {
             this.cards.push(x);
         }
     }
+
 }
 
 
