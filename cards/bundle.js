@@ -926,12 +926,12 @@ class PlayDeck extends GameView {
 
         let startY = 0
         this.startButtons = [
-            { label: "Dice-10", x: 300, y: startY += 60, w: 300, h: 40, click: () => this.clickDealerDice(DEALER_DICE_D10) },
-            { label: "Dice-248", x: 300, y: startY += 60, w: 300, h: 40, click: () => this.clickDealerDice(DEALER_DICE_D248) },
-            { label: "Hit <12", x: 300, y: startY += 60, w: 300, h: 40, click: () => this.clickDealerMust(12) },
-            { label: "Hit <13", x: 300, y: startY += 60, w: 300, h: 40, click: () => this.clickDealerMust(13) },
-            { label: "Hit <14", x: 300, y: startY += 60, w: 300, h: 40, click: () => this.clickDealerMust(14) },
-            { label: "Hit <15", x: 300, y: startY += 60, w: 300, h: 40, click: () => this.clickDealerMust(15) },
+        //   { label: "Dice-10", x: 300, y: startY += 60, w: 300, h: 40, click: () => this.clickDealerDice(DEALER_DICE_D10) },
+        //   { label: "Dice-248", x: 300, y: startY += 60, w: 300, h: 40, click: () => this.clickDealerDice(DEALER_DICE_D248) },
+        //   { label: "Hit <12", x: 300, y: startY += 60, w: 300, h: 40, click: () => this.clickDealerMust(12) },
+        //   { label: "Hit <13", x: 300, y: startY += 60, w: 300, h: 40, click: () => this.clickDealerMust(13) },
+        //    { label: "Hit <14", x: 300, y: startY += 60, w: 300, h: 40, click: () => this.clickDealerMust(14) },
+            { label: "Stop at 15", x: 300, y: startY += 60, w: 300, h: 40, click: () => this.clickDealerMust(15) },
             { label: "Rules", x: 300, y: startY += 60, w: 300, h: 40, click: () => window.location.replace('nibble-info.html') },
         ]
 
