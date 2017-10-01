@@ -1046,7 +1046,7 @@ class PlayDeck extends GameView {
         let isNaturalDealer = this.isNatural(HAND_DEALER);
 
         if (!isNatural && !isNaturalDealer && (player <= 20 && this.dealerType === DEALER_MUST)) {
-            while (dealer < this.dealerMust && dealer < player) {
+            while (dealer < this.dealerMust ) { //&& dealer < player) {
                 isNaturalDealer = this.isNatural(HAND_DEALER)
                 if (isNaturalDealer) break;
                 this.addCard(HAND_DEALER)
